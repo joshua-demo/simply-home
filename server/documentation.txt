@@ -40,4 +40,4 @@ Parameters:
 String deviceId: valid deviceIDs are "frontDoorCamera"
 
 Returns:
-{"objects" : [response]} : A JSON response with an objects key that has an array of NULL, "PERSON", "CAR", "ANIMAL", or "PACKAGE"
+{"objects" : [response]}: A JSON response with an objects key that has an array of NULL, "PERSON", "CAR", "ANIMAL", or "PACKAGE"
