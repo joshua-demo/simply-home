@@ -61,7 +61,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         ctx.logger.info(functions_to_use)
 
         # send code to Gemini client 
-        model = genai.GenerativeModel('gemini-pro', tools=functions_to_use, system_instruction=instruction)
+        model = genai.GenerativeModel('models/gemini-1.5-pro-latest', tools=functions_to_use, system_instruction=instruction)
 
         chat = model.start_chat(enable_automatic_function_calling=True)
         chat.send_message(command)
