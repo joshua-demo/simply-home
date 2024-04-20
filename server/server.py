@@ -7,7 +7,7 @@ from uagents.query import query
 AGENT_ADDRESS = "agent1qgpagptgy525qxnl20383gphrf42wctpw5hg6h0lsajtte9w4zl2qgumtgv"
 
 
-class TestRequest(Model):
+class Request(Model):
     command: str
 
 
@@ -27,7 +27,7 @@ def read_root():
 
 
 @app.post("/submit")
-async def make_agent_call(req: TestRequest):
+async def make_agent_call(req: Request):
     try:
         res = await agent_query(req)
         return f"successful call - agent response: {res}"

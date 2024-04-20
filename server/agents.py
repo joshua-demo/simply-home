@@ -2,11 +2,11 @@ import os
 
 import google.generativeai as genai
 from dotenv import load_dotenv
-from uagents import Agent, Context, Model
+from uagents import Agent, Bureau, Context, Model
 
 import actions # custom functions that will work on smart home devices
 
-class TestRequest(Model):
+class Request(Model):
     command: str
 
 class Response(Model):
@@ -17,9 +17,14 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY")) # configure Gemini client
 
 orchestrator = Agent(
    name="orchestrator", 
-   port=8001, # 8000 is the server
    seed="orchestrator recovery phrase",
    endpoint=["http://localhost:8001/submit"],
+)
+
+tool_former = Agent(
+    name="tool_former",
+    seed="tool_former recovery phrase",
+    endpoint=["http://localhost:8001/submit"],
 )
 
 @orchestrator.on_event("startup")
@@ -28,9 +33,15 @@ async def startup(ctx: Context):
     ctx.logger.info(f"With address: {orchestrator.address}")
     ctx.logger.info(f"And wallet address: {orchestrator.wallet.address()}")
 
+@tool_former.on_event("startup")
+async def startup(ctx: Context):
+    ctx.logger.info(f"Starting up {tool_former.name}")
+    ctx.logger.info(f"With address: {tool_former.address}")
+    ctx.logger.info(f"And wallet address: {tool_former.wallet.address()}")
 
-@orchestrator.on_query(model=TestRequest, replies={Response})
-async def query_handler(ctx: Context, sender: str, _query: TestRequest):
+
+@orchestrator.on_query(model=Request, replies={Response})
+async def query_handler(ctx: Context, sender: str, _query: Request):
     ctx.logger.info(_query)
     try:
         base_prompt = """
@@ -69,6 +80,9 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
         if has_function_call:
             await ctx.send(sender, Response(text="successfully adjusted smart home"))
         else:
+            # get new function(s) from tool_former
+            await ctx.send(tool_former.address, Response(text="sja;ldskfjldsme"))
+
             await ctx.send(sender, Response(text="no suitable function was found"))
         
         for content in chat.history:
@@ -79,6 +93,14 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
         ctx.logger.error(f"An error occurred: {str(e)}")
         await ctx.send(sender, Response(text="fail"))
 
+@tool_former.on_message(model=Response)
+async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
+    ctx.logger.info(f"Received message from {sender}: {msg.text}")
+
+
+community = Bureau(port=8001)
+community.add(orchestrator)
+community.add(tool_former)
 
 if __name__ == "__main__":
-    orchestrator.run()
+    community.run()
