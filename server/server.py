@@ -3,7 +3,6 @@ from flask import Flask, request, jsonify
 from uagents import Model
 from flask_cors import CORS
 from pydantic import Field
-from utils import AgentProtocolAdapter, AgentAdapterError
 import os
 
 class Task(Model):
@@ -11,7 +10,6 @@ class Task(Model):
   task: str
   code: str
 
-agent_adapter = AgentProtocolAdapter(endpoint="http://localhost:8000")
 app = Flask(__name__)
 CORS(app)
 
@@ -22,8 +20,7 @@ def root():
 @app.route("/submit", methods=["POST"])
 async def send_task():
     try:
-        res = await agent_adapter.send_message("agent1qgpagptgy525qxnl20383gphrf42wctpw5hg6h0lsajtte9w4zl2qgumtgv", Task(task="test", code="test"))
-        json_response = json.loads(res)
+        json_response = "sup"
         
         return json_response # not sure what this looks like
     except Exception as e:
