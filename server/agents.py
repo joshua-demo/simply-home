@@ -1,13 +1,18 @@
+import os
+
+import google.generativeai as genai
+from dotenv import load_dotenv
 from uagents import Agent, Context, Model
 
 
 class TestRequest(Model):
-    message: str
-
+    command: str
 
 class Response(Model):
     text: str
 
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY")) # configure Gemini client
 
 orchestrator = Agent(
    name="orchestrator", 
@@ -26,11 +31,15 @@ async def startup(ctx: Context):
 
 @orchestrator.on_query(model=TestRequest, replies={Response})
 async def query_handler(ctx: Context, sender: str, _query: TestRequest):
-    ctx.logger.info("Query received")
+    ctx.logger.info(_query)
     try:
-        # do something here
-        await ctx.send(sender, Response(text="success"))
-    except Exception:
+        # send code to 
+        model = genai.GenerativeModel('gemini-pro')
+        command = _query.command
+        response = model.generate_content(command)
+        await ctx.send(sender, Response(text=response.text))
+    except Exception as e:
+        ctx.logger.error(f"An error occurred: {str(e)}")
         await ctx.send(sender, Response(text="fail"))
 
 
