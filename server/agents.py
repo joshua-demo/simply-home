@@ -1,8 +1,11 @@
 import os
+from google.generativeai.types import content_types
 
 import google.generativeai as genai
 from dotenv import load_dotenv
 from uagents import Agent, Bureau, Context, Model
+import instructions
+from collections.abc import Iterable
 
 import actions # custom functions that will work on smart home devices
 
@@ -27,6 +30,12 @@ tool_former = Agent(
     endpoint=["http://localhost:8001/submit"],
 )
 
+def tool_config_from_mode(mode: str, fns: Iterable[str] = ()):
+    """Create a tool config with the specified function calling mode."""
+    return content_types.to_tool_config(
+        {"function_calling_config": {"mode": mode, "allowed_function_names": fns}}
+    )
+
 @orchestrator.on_event("startup")
 async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {orchestrator.name}")
@@ -44,14 +53,6 @@ async def startup(ctx: Context):
 async def query_handler(ctx: Context, sender: str, _query: Request):
     ctx.logger.info(_query)
     try:
-        instruction = """
-        You are a smart home assistant. Your job is to understand and execute commands securely and efficiently. 
-        You are given a list of commands to choose from. The query is a command from a user that
-        you need to execute. You can use the given tools to match the user request
-        to the most suitable command. If the command is not in the list, you should respond with an error
-        message. Do NOT just choose a function that is close enough. It has to be a function
-        perfectly matching the user's request. If it isn't then you should respond with an error message.
-        """
         command = _query.command
 
         # get all functions from actions.py (got this from chatgpt)
@@ -61,10 +62,9 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         ctx.logger.info(functions_to_use)
 
         # send code to Gemini client 
-        model = genai.GenerativeModel('models/gemini-1.5-pro-latest', tools=functions_to_use, system_instruction=instruction)
-
+        model = genai.GenerativeModel('models/gemini-1.5-pro-latest', tools=functions_to_use, system_instruction=instructions.orchestrator_instruction)
         chat = model.start_chat(enable_automatic_function_calling=True)
-        chat.send_message(command)
+        chat.send_message(command, tool_config=tool_config_from_mode("auto"))
 
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
 
@@ -81,7 +81,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
             await ctx.send(sender, Response(text="successfully adjusted smart home"))
         else:
             # get new function(s) from tool_former
-            await ctx.send(tool_former.address, Response(text="sja;ldskfjldsme"))
+            await ctx.send(tool_former.address, Response(text=command))
 
             await ctx.send(sender, Response(text="no suitable function was found"))
         
@@ -96,6 +96,15 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
 @tool_former.on_message(model=Response)
 async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
     ctx.logger.info(f"Received message from {sender}: {msg.text}")
+    try:
+        request = msg.text
+        model = genai.GenerativeModel('models/gemini-1.5-pro-latest', system_instruction=instructions.tool_former_instruction)
+        chat = model.start_chat(enable_automatic_function_calling=True)
+        function = chat.send_message(request, tool_config=tool_config_from_mode("none"))
+        ctx.logger.info(f"Function generated: {function}")
+    except Exception as e:
+        ctx.logger.error(f"An error occurred: {str(e)}")
+        await ctx.send(sender, Response(text="fail"))
 
 
 community = Bureau(port=8001)
