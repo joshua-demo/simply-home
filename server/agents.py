@@ -35,10 +35,11 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
     try:
         # send code to 
         model = genai.GenerativeModel('gemini-pro')
-        ctx.logger.info(_query.message)
+        ctx.logger.info(_query.command)
         response = model.generate_content("What is the meaning of life?")
         await ctx.send(sender, Response(text=response.text))
-    except Exception:
+    except Exception as e:
+        ctx.logger.error(f"An error occurred: {str(e)}")
         await ctx.send(sender, Response(text="fail"))
 
 
