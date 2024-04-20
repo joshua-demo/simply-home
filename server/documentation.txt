@@ -1,42 +1,76 @@
 All basic api routes require a deviceId.
-The following IDs are valid: "bedroomLight", "kitchenLight", "livingRoomLight", "livingRoomSpeaker", "bedroomSpeaker", "frontDoorLock", "frontDoorCamera"
+These are the rooms in the house:
+    "livingRoom", 
+    "kitchen", 
+    "bedroom", 
+    "frontHouse"
+
+The types of devices are:
+"light",
+"speaker",
+"lock",
+"camera
+
+A light has attributes
+    "isOn": boolean,
+    "color": string,
+
+A speaker has attributes
+    "isOn": boolean,
+    "text": string,
+
+A lock has attributes
+    "isLocked": boolean,
+
+A camera has attributes
+    "item": string,
+
+The "livingRoom" has 1 "light" device and 1 "speaker" device
+The "kitchen" has 1 "light" device and 1 "speaker" device
+The "bedroom" has 1 "light" device and 1 "speaker" device
+The "frontHouse" has 1 "lock" device" and 1 "camera" device
+
 
 POST /turnOn
 Turns on the specified device.
 Parameters:
-String deviceId: valid IDs are "bedroomLight", "kitchenLight", "livingRoomLight", "livingRoomSpeaker", "bedroomSpeaker"
+String "room" and String "device"
+ - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
+ - valid devices are "light", "speaker"
 
-POST /turnOff
+POST /turnOn
 Turns off the specified device.
 Parameters:
-String deviceId: valid IDs are "bedroomLight", "kitchenLight", "livingRoomLight", "livingRoomSpeaker", "bedroomSpeaker"
+String "room" and String "device"
+ - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
+ - valid devices are "light", "speaker"
 
 POST /setLightColor
 Sets the color of the specified light.
 Parameters:
-String deviceId: valid IDs are "bedroomLight", "kitchenLight", "livingRoomLight"
-String color: the color argument must be a hex color value
+String "room" and String "color"
+ - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
+ - valid colors are "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"
 
 POST /playSound
 Plays a selected sound on a speaker.
 Parameters:
-String deviceID: valid IDs are "livingRoomSpeaker", "bedroomSpeaker"
-String sound: the sound argument must be a string. ie. "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomonopia.
-int volume: the volume argument must be a number between 0 and 100
+String "room" and String "sound"
+ - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
+ - valid sounds are "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomonopia.
 
-POST /lockDoor(deviceId: string) :boolean
-Locks a specified door.
+POST /lockDoor
+Locks the front door.
 Parameters:
-String deviceId: valid IDs are "frontDoorLock"
+None
 
 POST /unlockDoor
 Unlocks the specified door
 Parameters:
-String deviceId: valid IDs are "frontDoorLock"
+None
 
-GET /checkCamera(deviceId: string) : CameraObject[]
-Identifies objects of interest in the specified camera
+GET /checkCamera() : string
 Parameters:
-String deviceId: valid deviceIDs are "frontDoorCamera"
+None
 Returns:
-{"objects" : [response]}: A JSON response with an objects key that has an array of NULL, "PERSON", "CAR", "ANIMAL", or "PACKAGE"
+A string response that is one of the following: "NOTHING", "PERSON", "CAR", "ANIMAL", or "PACKAGE"

@@ -22,7 +22,6 @@ orchestrator = Agent(
    endpoint=["http://localhost:8001/submit"],
 )
 
-
 @orchestrator.on_event("startup")
 async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {orchestrator.name}")
@@ -38,8 +37,9 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
         You are a smart home assistant. Your job is to understand and execute commands securely and efficiently. 
         You are given a list of commands to choose from. The query is a command from a user that
         you need to execute. You can use the given tools to match the user request
-        to the most suitable command. If the command is not in the list, you should respond with a hypothetical python function
-        that could be used to solve the command..
+        to the most suitable command. If the command is not in the list, you say that no suitable command was found. 
+
+        In this case, you will receive another message: this will be a Python function that will be suitable for executing the command. You will run this new function and then send a message to the user that the smart home has been adjusted.
         """
         command = base_prompt + _query.command
 
@@ -47,13 +47,24 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
         all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
         functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
 
-        # send code to 
+        ctx.logger.info(functions_to_use)
+
+        # send code to Gemini client 
         model = genai.GenerativeModel('gemini-pro', tools=functions_to_use)
 
         chat = model.start_chat(enable_automatic_function_calling=True)
         chat.send_message(command)
 
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
+
+        # remove this eventually; this just logs the chat history for debugging purposes
+        chat_history_string = ""
+        for content in chat.history:
+            part = content.parts[0]
+            chat_history_string += f"{content.role} -> {type(part).__name__}: {part}\n"
+            chat_history_string += '-'*80 + "\n"
+        ctx.logger.info(chat_history_string)
+        # remove above eventually....
 
         if has_function_call:
             await ctx.send(sender, Response(text="successfully adjusted smart home"))
