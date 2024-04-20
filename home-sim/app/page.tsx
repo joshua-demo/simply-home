@@ -19,15 +19,20 @@ function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightC
       <h2 className="font-semibold text-2xl text-center">{roomName}</h2>
       <div className="grid grid-cols-2 place-items-center mt-4">
         <button
-          style={{ backgroundColor: lightOn ? lightColor : "transparent" }}
-          className={`rounded-full hover:bg-gray-600 p-3 ${lightOn ? "transparent" : "hover:bg-gray-600 "}`}          
+          style={{
+            backgroundColor: lightOn ? lightColor : "transparent",
+            ...(lightOn ? {} : { ":hover": { backgroundColor: "rgb(107 114 128)" } }),
+          }}
+          className={`rounded-full p-3 border border-gray-800 ${
+            lightOn ? "transparent" : "hover:border-gray-500"
+          }`}
           onClick={toggleLight}
         >
           <LightbulbIcon className="h-8 w-8" />
         </button>
         <button
-          className={`rounded-xl p-3 ${
-            speakerOn ? "bg-gray-600" : "hover:bg-gray-600"
+          className={`rounded-xl p-3 border border-gray-800 ${
+            speakerOn ? "border-gray-500" : "hover:border-gray-500"
           }`}
           onClick={toggleSpeaker}
         >
