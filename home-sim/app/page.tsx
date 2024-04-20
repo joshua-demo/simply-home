@@ -1,7 +1,6 @@
 "use client"
 import { useState, useEffect } from "react";
 import { LightbulbIcon, SpeakerIcon } from "./components/icons";
-import colorNames from 'color-names';
 
 type RoomProps = {
   roomName: string;
@@ -13,15 +12,6 @@ type RoomProps = {
   speakerText: string;
 };
 
-function colorNameToHex(colorName: string): string | null {
-  const lowerCaseColorName = colorName.toLowerCase().trim();
-  
-  if (lowerCaseColorName in colorNames) {
-    return colorNames[lowerCaseColorName as keyof typeof colorNames];
-  } else {
-    return null;
-  }
-}
 
 function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightColor, speakerText }: RoomProps) {
   return (
