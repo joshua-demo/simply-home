@@ -38,7 +38,7 @@ String "room" and String "device"
  - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
  - valid devices are "light", "speaker"
 
-POST /turnOn
+POST /turnOff
 Turns off the specified device.
 Parameters:
 String "room" and String "device"
@@ -56,8 +56,8 @@ POST /playSound
 Plays a selected sound on a speaker.
 Parameters:
 String "room" and String "sound"
- - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
- - valid sounds are "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomonopia.
+ - valid rooms are "livingRoom", "kitchen", "bedroom"
+ - valid sounds are "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomatopoeia.
 
 POST /lockDoor
 Locks the front door.
