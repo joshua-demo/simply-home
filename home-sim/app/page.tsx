@@ -65,6 +65,8 @@ export default function Home() {
   const [bedroomRoomSpeakerText, setBedroomRoomSpeakerText] = useState("bedroom speaker playing sound");
   
   const [time, setTime] = useState(new Date(0));
+
+  {/* manual clock */}
   useEffect(() => {
     const interval = setInterval(() => {
       const newTime = new Date(time.getTime() + 15 * 60000);
@@ -73,6 +75,32 @@ export default function Home() {
 
     return () => clearInterval(interval);
   }, [time]);
+
+  useEffect(() => {
+    if((time.getTime()/60000) % 30){
+      console.log("getting data")
+      fetch("/api/read")
+      .then((res) => res.json())
+      .then((data) => {
+        const parsedData = JSON.parse(data);
+        setLivingRoomLight(parsedData.livingRoom.devices.light.isOn);
+        setKitchenLight(parsedData.kitchen.devices.light.isOn);
+        setBedroomLight(parsedData.bedroom.devices.light.isOn);
+        
+        setLivingRoomSpeaker(parsedData.livingRoom.devices.speaker.isOn);
+        setKitchenSpeaker(parsedData.kitchen.devices.speaker.isOn);
+        setBedroomSpeaker(parsedData.bedroom.devices.speaker.isOn);
+
+        setLivingRoomLightColor(parsedData.livingRoom.devices.light.color);
+        setKitchenLightColor(parsedData.kitchen.devices.light.color);
+        setBedroomLightColor(parsedData.bedroom.devices.light.color);
+
+        setLivingRoomSpeakerText(parsedData.livingRoom.devices.speaker.text);
+        setKitchenRoomSpeakerText(parsedData.kitchen.devices.speaker.text);
+        setBedroomRoomSpeakerText(parsedData.bedroom.devices.speaker.text);
+      })
+    }
+  },[time])
 
   const formattedTime = time.toLocaleString("en-US", {
     hour: "numeric",
