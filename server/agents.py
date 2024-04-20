@@ -4,6 +4,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from uagents import Agent, Context, Model
 
+import actions # custom functions that will work on smart home devices
 
 class TestRequest(Model):
     command: str
@@ -33,12 +34,38 @@ async def startup(ctx: Context):
 async def query_handler(ctx: Context, sender: str, _query: TestRequest):
     ctx.logger.info(_query)
     try:
+        base_prompt = """
+        You are a smart home assistant. Your job is to understand and execute commands securely and efficiently. 
+        You are given a list of commands to choose from. The query is a command from a user that
+        you need to execute. You can use the given tools to match the user request
+        to the most suitable command. If the command is not in the list, you should respond with a hypothetical python function
+        that could be used to solve the command..
+        """
+        command = base_prompt + _query.command
+
+        # get all functions from actions.py (got this from chatgpt)
+        all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
+        functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
+
         # send code to 
-        model = genai.GenerativeModel('gemini-pro')
-        ctx.logger.info(_query.message)
-        response = model.generate_content("What is the meaning of life?")
-        await ctx.send(sender, Response(text=response.text))
-    except Exception:
+        model = genai.GenerativeModel('gemini-pro', tools=functions_to_use)
+
+        chat = model.start_chat(enable_automatic_function_calling=True)
+        chat.send_message(command)
+
+        has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
+
+        if has_function_call:
+            await ctx.send(sender, Response(text="successfully adjusted smart home"))
+        else:
+            await ctx.send(sender, Response(text="no suitable function was found"))
+        
+        for content in chat.history:
+          part = content.parts[0]
+          print(content.role, "->", type(part).to_dict(part))
+          print('-'*80)
+    except Exception as e:
+        ctx.logger.error(f"An error occurred: {str(e)}")
         await ctx.send(sender, Response(text="fail"))
 
 

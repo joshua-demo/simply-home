@@ -34,5 +34,15 @@
                 "text": "bedroom speaker playing sound"
             }
         }
+    },
+    "frontHouse":{
+        "devices": {
+            "lock": {
+                "isLocked": true
+            },
+            "camera": {
+                "item": "nothing"
+            }
+        }
     }
 }
