@@ -1,44 +1,38 @@
 import json
-from flask import Flask, request, jsonify
+import uvicorn
+
+from fastapi import FastAPI
 from uagents import Model
-from flask_cors import CORS
-from pydantic import Field
-import os
+from uagents.query import query
 
-class Task(Model):
-  # input payload
-  task: str
-  code: str
+AGENT_ADDRESS = "agent1qgpagptgy525qxnl20383gphrf42wctpw5hg6h0lsajtte9w4zl2qgumtgv"
 
-app = Flask(__name__)
-CORS(app)
 
-@app.route("/", methods=["GET"])
-def root():
-    return({ "message": "sup" })
+class TestRequest(Model):
+    message: str
 
-@app.route("/submit", methods=["POST"])
-async def send_task():
+
+async def agent_query(req):
+    response = await query(destination=AGENT_ADDRESS, message=req, timeout=15.0)
+    data = json.loads(response.decode_payload())
+    return data["text"]
+
+
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return "Hello from the Agent controller"
+
+
+@app.post("/submit")
+async def make_agent_call(req: TestRequest):
     try:
-        json_response = "sup"
-        
-        return json_response # not sure what this looks like
-    except Exception as e:
-        return { "error": str(e) }
-
-@app.route("/callback", methods=["POST"])
-def agent_callback():
-    """
-    This endpoint is called by external agents when it receives a message.
-    """
-    #print(request.get_json())
-    try:
-        print()
-        #agent_adapter.process_response(request.get_json())
-    except AgentAdapterError as e:
-        return {}
-
-    return {}
-
+        res = await agent_query(req)
+        return f"successful call - agent response: {res}"
+    except Exception:
+        return "unsuccessful agent call"
+    
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
+    uvicorn.run("server:app", port=8000, reload=True)
