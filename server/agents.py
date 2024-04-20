@@ -1,5 +1,4 @@
 import requests
-from pydantic import Field
 from uagents import Agent, Context, Protocol, Model
 from uagents.setup import fund_agent_if_low
  
@@ -16,8 +15,8 @@ fund_agent_if_low(orchestrator.wallet.address()) # https://fetch.ai/docs/guides/
 
 class Task(Model):
   # input payload
-  task: str = Field(description="")
-  code: str = Field(description="")
+  task: str
+  code: str
 
 task_protocol = Protocol("Task Protocol")
 
