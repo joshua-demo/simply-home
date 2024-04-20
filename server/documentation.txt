@@ -1,0 +1,43 @@
+All basic api routes require a deviceId.
+The following IDs are valid: "bedroomLight", "kitchenLight", "livingRoomLight", "livingRoomSpeaker", "bedroomSpeaker", "frontDoorLock", "frontDoorCamera"
+
+POST /turnOn
+Turns on the specified device.
+Parameters:
+String deviceId: valid IDs are "bedroomLight", "kitchenLight", "livingRoomLight", "livingRoomSpeaker", "bedroomSpeaker"
+
+POST /turnOff
+Turns off the specified device.
+Parameters:
+String deviceId: valid IDs are "bedroomLight", "kitchenLight", "livingRoomLight", "livingRoomSpeaker", "bedroomSpeaker"
+
+POST /setLightColor
+Sets the color of the specified light.
+Parameters:
+String deviceId: valid IDs are "bedroomLight", "kitchenLight", "livingRoomLight"
+String color: the color argument must be a hex color value
+
+POST /playSound
+Plays a selected sound on a speaker.
+Parameters:
+String deviceID: valid IDs are "livingRoomSpeaker", "bedroomSpeaker"
+String sound: the sound argument must be a string. ie. "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomonopia.
+int volume: the volume argument must be a number between 0 and 100
+
+POST /lockDoor(deviceId: string) :boolean
+Locks a specified door.
+Parameters:
+String deviceId: valid IDs are "frontDoorLock"
+
+POST /unlockDoor
+Unlocks the specified door
+Parameters:
+String deviceId: valid IDs are "frontDoorLock"
+
+GET /checkCamera(deviceId: string) : CameraObject[]
+Identifies objects of interest in the specified camera
+Parameters:
+String deviceId: valid deviceIDs are "frontDoorCamera"
+
+Returns:
+{"objects" : [response]} : A JSON response with an objects key that has an array of NULL, "PERSON", "CAR", "ANIMAL", or "PACKAGE"
