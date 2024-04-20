@@ -22,7 +22,6 @@ orchestrator = Agent(
    endpoint=["http://localhost:8001/submit"],
 )
 
-
 @orchestrator.on_event("startup")
 async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {orchestrator.name}")
@@ -47,13 +46,24 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
         all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
         functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
 
-        # send code to 
+        ctx.logger.info(functions_to_use)
+
+        # send code to Gemini client 
         model = genai.GenerativeModel('gemini-pro', tools=functions_to_use)
 
         chat = model.start_chat(enable_automatic_function_calling=True)
         chat.send_message(command)
 
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
+
+        # remove this eventually; this just logs the chat history for debugging purposes
+        chat_history_string = ""
+        for content in chat.history:
+            part = content.parts[0]
+            chat_history_string += f"{content.role} -> {type(part).__name__}: {part}\n"
+            chat_history_string += '-'*80 + "\n"
+        ctx.logger.info(chat_history_string)
+        # remove above eventually....
 
         if has_function_call:
             await ctx.send(sender, Response(text="successfully adjusted smart home"))
