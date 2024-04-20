@@ -24,7 +24,7 @@ function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightC
             ...(lightOn ? {} : { ":hover": { backgroundColor: "rgb(107 114 128)" } }),
           }}
           className={`rounded-full p-3 border border-gray-800 ${
-            lightOn ? "transparent" : "hover:border-gray-500"
+            lightOn ? "transparent text-gray-900" : "hover:border-gray-500"
           }`}
           onClick={toggleLight}
         >
@@ -32,7 +32,7 @@ function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightC
         </button>
         <button
           className={`rounded-xl p-3 border border-gray-800 ${
-            speakerOn ? "border-gray-500" : "hover:border-gray-500"
+            speakerOn ? "!border-gray-500" : "hover:border-gray-500"
           }`}
           onClick={toggleSpeaker}
         >
