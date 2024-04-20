@@ -1,16 +1,23 @@
 "use client";
-import { useEffect } from "react";
-import { motion, stagger, useAnimate } from "framer-motion";
+import { Dispatch, SetStateAction, useEffect } from "react";
+import { motion, stagger, useAnimate, useMotionValue, useMotionValueEvent } from "framer-motion";
 import { cn } from "@/app/utils/cn";
 
 export const TextGenerateEffect = ({
   words,
   className,
+  setLoading
 }: {
   words: string;
   className?: string;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const x = useMotionValue(0)
   const [scope, animate] = useAnimate();
+  useMotionValueEvent(x, "animationComplete", () => {
+    console.log("Animation complete");
+    setLoading(false);
+  });
   let wordsArray = words.split(" ");
   useEffect(() => {
     animate(
