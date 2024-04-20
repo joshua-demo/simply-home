@@ -40,6 +40,26 @@ def turn_device_off(room_and_device:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
+def set_living_room_light(color_name:str):
+    """
+    Changes the living room light to a new color.
+    Valid colors are "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"
+    Styling is done via tailwind; if a user wants darker color, they can add -600 to the color name. For example, "red-600" is a darker red.
+    """
+    url = "http://localhost:3001/api/setLightColor"
+
+    payload = {
+        "room": "livingRoom",
+        "color": color_name
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        print("POST request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making POST request:", e)
+
 def play_sound(room_and_sound:str):
     """
     Plays a selected sound on a speaker.
@@ -61,13 +81,16 @@ def play_sound(room_and_sound:str):
         print("Error making POST request:", e)
 
 
-def set_living_room_light(color_name:str):
-    """changes the living room light to color_name"""
-    url = "http://localhost:3001/api/setLightColor"
-
+def stop_sound(room:str):
+    """
+    Stops the sound playing on a speaker.
+    Parameters: String "room"
+    Valid rooms are "livingRoom", "kitchen", "bedroom". "frontHouse" is NOT valid because it has no speaker.
+    """
+    url = "http://localhost:3001/api/playSound"
     payload = {
-        "room": "livingRoom",
-        "color": color_name
+        "room": room,
+        "sound": ""
     }
 
     try:
@@ -76,3 +99,39 @@ def set_living_room_light(color_name:str):
         print("POST request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
+
+def lock_door():
+    """
+    Lock the door to the house. There's only one door.
+    """
+    url = "http://localhost:3001/api/lockDoor"
+    try:
+        response = requests.post(url)
+        response.raise_for_status()
+        print("POST request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making POST request:", e)
+
+def unlock_door():
+    """
+    Unlock the door to the house. There's only one door.
+    """
+    url = "http://localhost:3001/api/unlockDoor"
+    try:
+        response = requests.post(url)
+        response.raise_for_status()
+        print("POST request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making POST request:", e)
+
+def check_camera():
+    """
+    Check the camera at the front of the house.
+    """
+    url = "http://localhost:3001/api/checkCamera"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        print("GET request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making GET request:", e)
