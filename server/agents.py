@@ -21,7 +21,7 @@ class Task(Model):
 
 task_protocol = Protocol("Task Protocol")
 
-@task_protocol.on_message(model=Task, replies=str)
+@task_protocol.on_message(model=Task)
 async def on_message(ctx: Context, sender: str, msg: Task):
     try:
       # server.py will send messages to the agent
@@ -45,3 +45,4 @@ async def on_message(ctx: Context, sender: str, msg: Task):
 
 if __name__ == "__main__":
     orchestrator.run()
+    print("uAgent address: ", orchestrator.address)
