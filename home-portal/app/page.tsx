@@ -18,14 +18,14 @@ export default function Home() {
           className="text-center font-bold text-transparent bg-clip-text drop-shadow-2xl bg-gradient-to-b from-white to-white/10"
           setLoading={setLoading}
         />
-        <AnimatePresenceWrapper isVisible={!loading}>
+        <AnimatePresenceWrapper isVisible={!loading} className="mt-10">
           <BackgroundGradient
             className="rounded-[22px] bg-white dark:bg-zinc-900 !p-1"
-            containerClassName="w-[50%] min-w-100px mt-10"
+            containerClassName="min-w-100px w-48 md:w-[200px]"
           >
             <textarea
               placeholder="What would you like your smart home to do?"
-              className="w-full m-0 text-center bg-transparent focus:outline-none text-2xl overflow-visible"
+              className="w-full m-0 text-center bg-transparent focus:outline-none text-2xl overflow-visible resize-none"
             />
             {/* Add microphone button */}
           </BackgroundGradient>

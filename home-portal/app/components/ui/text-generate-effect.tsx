@@ -12,15 +12,10 @@ export const TextGenerateEffect = ({
   className?: string;
   setLoading: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const x = useMotionValue(0)
   const [scope, animate] = useAnimate();
-  useMotionValueEvent(x, "animationComplete", () => {
-    console.log("Animation complete");
-    setLoading(false);
-  });
   let wordsArray = words.split(" ");
   useEffect(() => {
-    animate(
+    const animation = animate(
       "span",
       {
         opacity: 1,
@@ -30,11 +25,12 @@ export const TextGenerateEffect = ({
         delay: stagger(0.2),
       }
     );
+    animation.then(() => setLoading(false));
   }, [scope.current]);
 
   const renderWords = () => {
     return (
-      <motion.div ref={scope}>
+      <motion.div ref={scope} >
         {wordsArray.map((word, idx) => {
           return (
             <motion.span
