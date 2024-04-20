@@ -25,11 +25,10 @@ const Input: React.FC<InputProps> = () => {
         className={"w-full m-0 text-center bg-transparent focus:outline-none text-2xl overflow-visible resize-none max-h-[60vh]"}
         onChange={(e) => setText(e.target.value)}
       />
-      {/* Mic button */}
-      <button className='p-3'>
+      {/* TODO: support text to speech */}
+      {/* <button className='p-3'>
         <MicSVG />
-      </button>
-        {/* Send button */}
+      </button> */}
       <button className='pr-1'>
         <SendSVG />
       </button>
