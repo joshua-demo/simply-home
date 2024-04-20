@@ -22,7 +22,7 @@ function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightC
             backgroundColor: lightOn ? lightColor : "transparent",
             ...(lightOn ? {} : { ":hover": { backgroundColor: "rgb(107 114 128)" } }),
           }}
-          className={`rounded-full p-3 border border-gray-800 transition-colors duration-350 ${
+          className={`rounded-full p-3 border border-gray-800 transition-colors duration-700 ${
             lightOn ? "transparent text-gray-900" : "hover:border-gray-500"
           }`}
           onClick={toggleLight}
