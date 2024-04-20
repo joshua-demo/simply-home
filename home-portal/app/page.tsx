@@ -21,7 +21,7 @@ export default function Home() {
         <AnimatePresenceWrapper isVisible={!loading} className="mt-10">
           <BackgroundGradient
             className="rounded-[22px] bg-white dark:bg-zinc-900 !p-1"
-            containerClassName="min-w-100px w-48 md:w-[200px]"
+            containerClassName="min-w-100px w-48 md:w-[600px]"
           >
             <textarea
               placeholder="What would you like your smart home to do?"
