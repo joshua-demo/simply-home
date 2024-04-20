@@ -12,23 +12,22 @@ type RoomProps = {
   speakerText: string;
 };
 
+
 function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightColor, speakerText }: RoomProps) {
   return (
-    <div className="border rounded-xl border-black p-6 m-4">
+    <div className="border rounded-xl border-white p-6 m-4">
       <h2 className="font-semibold text-2xl text-center">{roomName}</h2>
       <div className="grid grid-cols-2 place-items-center mt-4">
         <button
           style={{ backgroundColor: lightOn ? lightColor : "transparent" }}
-          className={`rounded-full p-3 ${
-            lightOn ? "shadow-md" : "hover:shadow-md"
-          }`}
+          className={`rounded-full hover:bg-gray-600 p-3 ${lightOn ? "transparent" : "hover:bg-gray-600 "}`}          
           onClick={toggleLight}
         >
           <LightbulbIcon className="h-8 w-8" />
         </button>
         <button
           className={`rounded-xl p-3 ${
-            speakerOn ? "bg-slate-200" : "hover:bg-slate-200"
+            speakerOn ? "bg-gray-600" : "hover:bg-gray-600"
           }`}
           onClick={toggleSpeaker}
         >
@@ -65,6 +64,8 @@ export default function Home() {
   const [bedroomRoomSpeakerText, setBedroomRoomSpeakerText] = useState("bedroom speaker playing sound");
   
   const [time, setTime] = useState(new Date(0));
+
+  {/* manual clock */}
   useEffect(() => {
     const interval = setInterval(() => {
       const newTime = new Date(time.getTime() + 15 * 60000);
@@ -74,6 +75,32 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [time]);
 
+  // useEffect(() => {
+  //   if((time.getTime()/60000) % 30){
+  //     console.log("getting data")
+  //     fetch("/api/read")
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const parsedData = JSON.parse(data);
+  //       setLivingRoomLight(parsedData.livingRoom.devices.light.isOn);
+  //       setKitchenLight(parsedData.kitchen.devices.light.isOn);
+  //       setBedroomLight(parsedData.bedroom.devices.light.isOn);
+        
+  //       setLivingRoomSpeaker(parsedData.livingRoom.devices.speaker.isOn);
+  //       setKitchenSpeaker(parsedData.kitchen.devices.speaker.isOn);
+  //       setBedroomSpeaker(parsedData.bedroom.devices.speaker.isOn);
+
+  //       setLivingRoomLightColor(parsedData.livingRoom.devices.light.color);
+  //       setKitchenLightColor(parsedData.kitchen.devices.light.color);
+  //       setBedroomLightColor(parsedData.bedroom.devices.light.color);
+
+  //       setLivingRoomSpeakerText(parsedData.livingRoom.devices.speaker.text);
+  //       setKitchenRoomSpeakerText(parsedData.kitchen.devices.speaker.text);
+  //       setBedroomRoomSpeakerText(parsedData.bedroom.devices.speaker.text);
+  //     })
+  //   }
+  // },[time])
+
   const formattedTime = time.toLocaleString("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -82,7 +109,7 @@ export default function Home() {
   });
 
   return (
-    <div>
+    <div className="bg-gray-800 min-h-[100vh] text-white/90">
       <h1 className="text-center text-3xl font-bold p-4">Home Simulator</h1>
       <h2 className="text-center text-xl">Current Time: {formattedTime}</h2>
       
