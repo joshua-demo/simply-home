@@ -26,10 +26,10 @@ async def startup(ctx: Context):
 
 @orchestrator.on_query(model=TestRequest, replies={Response})
 async def query_handler(ctx: Context, sender: str, _query: TestRequest):
-    ctx.logger.info("Query received")
+    ctx.logger.info(_query.command)
     try:
         # do something here
-        await ctx.send(sender, Response(text="success"))
+        await ctx.send(sender, Response(text=_query.command))
     except Exception:
         await ctx.send(sender, Response(text="fail"))
 
