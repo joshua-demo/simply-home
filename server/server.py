@@ -1,5 +1,4 @@
 import json
-import uvicorn
 
 from fastapi import FastAPI
 from uagents import Model
@@ -15,7 +14,7 @@ class TestRequest(Model):
 async def agent_query(req):
     response = await query(destination=AGENT_ADDRESS, message=req, timeout=15.0)
     data = json.loads(response.decode_payload())
-    return data["commmand"]
+    return data["text"]
 
 
 app = FastAPI()
@@ -33,6 +32,3 @@ async def make_agent_call(req: TestRequest):
         return f"successful call - agent response: {res}"
     except Exception:
         return "unsuccessful agent call"
-    
-if __name__ == "__main__":
-    uvicorn.run("server:app", port=8000, reload=True)
