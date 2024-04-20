@@ -2,7 +2,7 @@ from uagents import Agent, Context, Model
 
 
 class TestRequest(Model):
-    message: str
+    command: str
 
 
 class Response(Model):

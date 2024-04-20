@@ -8,7 +8,7 @@ AGENT_ADDRESS = "agent1qgpagptgy525qxnl20383gphrf42wctpw5hg6h0lsajtte9w4zl2qgumt
 
 
 class TestRequest(Model):
-    message: str
+    command: str
 
 
 async def agent_query(req):
