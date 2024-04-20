@@ -15,7 +15,7 @@ const Input: React.FC<InputProps> = () => {
     },
     body: JSON.stringify({"command": command}), // body data type must match "Content-Type" header
   }}
-  const url = "http://localhost:5000/command";
+  const url = "http://localhost:8000/command";
   
   useEffect(() => {
     const textArea = textAreaRef.current;
