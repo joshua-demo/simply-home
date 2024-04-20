@@ -1,52 +1,38 @@
-import json
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import Field
-from uagents import Model
-import uvicorn
+from uagents import Agent, Context, Model
 
 
-class Task(Model):
-  # input payload
-  task: str = Field(description="")
-  code: str = Field(description="")
+class TestRequest(Model):
+    message: str
 
-app = FastAPI()
 
-origins = ["*"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+class Response(Model):
+    text: str
+
+
+orchestrator = Agent(
+   name="orchestrator", 
+   port=8001, # 8000 is the server
+   seed="orchestrator recovery phrase",
+   endpoint=["http://localhost:8001/submit"],
 )
 
-@app.get("/")
-def root():
-    return({ "message": "sup" })
 
-@app.post("/submit")
-async def send_task():
+@orchestrator.on_event("startup")
+async def startup(ctx: Context):
+    ctx.logger.info(f"Starting up {orchestrator.name}")
+    ctx.logger.info(f"With address: {orchestrator.address}")
+    ctx.logger.info(f"And wallet address: {orchestrator.wallet.address()}")
+
+
+@orchestrator.on_query(model=TestRequest, replies={Response})
+async def query_handler(ctx: Context, sender: str, _query: TestRequest):
+    ctx.logger.info("Query received")
     try:
-        json_response = 'sup'        
-        return json_response # not sure what this looks like
-    except Exception as e:
-        return { "error": str(e) }
+        # do something here
+        await ctx.send(sender, Response(text="success"))
+    except Exception:
+        await ctx.send(sender, Response(text="fail"))
 
-@app.route("/callback")
-def agent_callback():
-    """
-    This endpoint is called by external agents when it receives a message.
-    """
-    #print(request.get_json())
-    try:
-        print()
-        #agent_adapter.process_response(request.get_json())
-    except AgentAdapterError as e:
-        return {}
-
-    return {}
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", port=8000, reload=True)
+    orchestrator.run()
