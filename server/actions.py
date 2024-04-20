@@ -10,7 +10,7 @@ def set_living_room_light_to_red():
 
     payload = {
         "room": "livingRoom",
-        "color": "orange"
+        "color": "red"
     }
 
     try:

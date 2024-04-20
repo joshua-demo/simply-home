@@ -21,8 +21,9 @@ const Input: React.FC<InputProps> = () => {
     <div className="w-full flex flex-row">
       <textarea
         ref={textAreaRef}
+        rows={1}
         placeholder="What would you like your smart home to do?"
-        className={"w-full m-0 text-center bg-transparent focus:outline-none text-2xl overflow-visible resize-none max-h-[60vh]"}
+        className={"p-4 w-full text-center bg-transparent focus:outline-none text-2xl resize-none max-h-[60vh]"}
         onChange={(e) => setText(e.target.value)}
       />
       {/* TODO: support text to speech */}
