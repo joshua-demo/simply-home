@@ -37,8 +37,9 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
         You are a smart home assistant. Your job is to understand and execute commands securely and efficiently. 
         You are given a list of commands to choose from. The query is a command from a user that
         you need to execute. You can use the given tools to match the user request
-        to the most suitable command. If the command is not in the list, you should respond with a hypothetical python function
-        that could be used to solve the command..
+        to the most suitable command. If the command is not in the list, you say that no suitable command was found. 
+
+        In this case, you will receive another message: this will be a Python function that will be suitable for executing the command. You will run this new function and then send a message to the user that the smart home has been adjusted.
         """
         command = base_prompt + _query.command
 
