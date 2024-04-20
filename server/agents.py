@@ -33,14 +33,15 @@ async def startup(ctx: Context):
 async def query_handler(ctx: Context, sender: str, _query: TestRequest):
     ctx.logger.info(_query)
     try:
-        base_prompt = """
+        instruction = """
         You are a smart home assistant. Your job is to understand and execute commands securely and efficiently. 
         You are given a list of commands to choose from. The query is a command from a user that
         you need to execute. You can use the given tools to match the user request
-        to the most suitable command. If the command is not in the list, you should respond with a hypothetical python function
-        that could be used to solve the command..
+        to the most suitable command. If the command is not in the list, you should respond with an error
+        message. Do NOT just choose a function that is close enough. It has to be a function
+        perfectly matching the user's request. If it isn't then you should respond with an error message.
         """
-        command = base_prompt + _query.command
+        command = _query.command
 
         # get all functions from actions.py (got this from chatgpt)
         all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
@@ -49,7 +50,7 @@ async def query_handler(ctx: Context, sender: str, _query: TestRequest):
         ctx.logger.info(functions_to_use)
 
         # send code to Gemini client 
-        model = genai.GenerativeModel('gemini-pro', tools=functions_to_use)
+        model = genai.GenerativeModel('gemini-pro', tools=functions_to_use, system_instruction=instruction)
 
         chat = model.start_chat(enable_automatic_function_calling=True)
         chat.send_message(command)
