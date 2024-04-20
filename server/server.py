@@ -34,7 +34,7 @@ def read_root():
     return "Hello from the Agent controller"
 
 
-@app.post("/submit")
+@app.post("/command")
 async def make_agent_call(req: Request):
     try:
         res = await agent_query(req)
