@@ -38,6 +38,5 @@ GET /checkCamera(deviceId: string) : CameraObject[]
 Identifies objects of interest in the specified camera
 Parameters:
 String deviceId: valid deviceIDs are "frontDoorCamera"
-
 Returns:
 {"objects" : [response]}: A JSON response with an objects key that has an array of NULL, "PERSON", "CAR", "ANIMAL", or "PACKAGE"
