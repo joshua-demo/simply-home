@@ -1,35 +1,25 @@
 import json
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import Field
+from flask import Flask, request, jsonify
 from uagents import Model
-import uvicorn
-
+from flask_cors import CORS
+from pydantic import Field
 from utils import AgentProtocolAdapter, AgentAdapterError
-
+import os
 
 class Task(Model):
   # input payload
-  task: str = Field(description="")
-  code: str = Field(description="")
+  task: str
+  code: str
 
 agent_adapter = AgentProtocolAdapter(endpoint="http://localhost:8000")
-app = FastAPI()
+app = Flask(__name__)
+CORS(app)
 
-origins = ["*"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
+@app.route("/", methods=["GET"])
 def root():
     return({ "message": "sup" })
 
-@app.post("/submit")
+@app.route("/submit", methods=["POST"])
 async def send_task():
     try:
         res = await agent_adapter.send_message("agent1qgpagptgy525qxnl20383gphrf42wctpw5hg6h0lsajtte9w4zl2qgumtgv", Task(task="test", code="test"))
@@ -39,7 +29,7 @@ async def send_task():
     except Exception as e:
         return { "error": str(e) }
 
-@app.route("/callback")
+@app.route("/callback", methods=["POST"])
 def agent_callback():
     """
     This endpoint is called by external agents when it receives a message.
@@ -54,4 +44,4 @@ def agent_callback():
     return {}
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", port=8000, reload=True)
+    app.run(debug=True, port=8000)
