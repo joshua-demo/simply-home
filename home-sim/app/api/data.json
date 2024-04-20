@@ -1,1 +1,48 @@
-{"livingRoom":{"devices":{"light":{"isOn":false,"color":"blue"},"speaker":{"isOn":true,"text":"Mau likes music"}}},"kitchen":{"devices":{"light":{"isOn":false,"color":"yellow"},"speaker":{"isOn":false,"text":"kitchen speaker playing sound"}}},"bedroom":{"devices":{"light":{"isOn":false,"color":"yellow"},"speaker":{"isOn":false,"text":"bedroom speaker playing sound"}}},"frontHouse":{"devices":{"lock":{"isLocked":false},"camera":{"item":"nothing"}}}}
+{
+    "livingRoom": {
+        "devices": {
+            "light": {
+                "isOn": false,
+                "color": "yellow"
+            },
+            "speaker": {
+                "isOn": false,
+                "text": "living room speaker playing sound"
+            }
+        }
+    },
+    "kitchen": {
+        "devices": {
+            "light": {
+                "isOn": false,
+                "color": "yellow"
+            },
+            "speaker": {
+                "isOn": false,
+                "text": "kitchen speaker playing sound"
+            }
+        }
+    },
+    "bedroom": {
+        "devices": {
+            "light": {
+                "isOn": false,
+                "color": "yellow"
+            },
+            "speaker": {
+                "isOn": false,
+                "text": "bedroom speaker playing sound"
+            }
+        }
+    },
+    "frontHouse":{
+        "devices": {
+            "lock": {
+                "isLocked": true
+            },
+            "camera": {
+                "item": "nothing"
+            }
+        }
+    }
+}

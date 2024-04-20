@@ -262,7 +262,7 @@ export default function Home() {
       <h1 className="p-4 text-3xl font-bold text-center">Home Simulator</h1>
       <h2 className="text-xl text-center">Current Time: {formattedTime}</h2>
       
-      <div className="flex flex-col max-w-5xl mx-auto">
+      <div className="grid max-w-5xl grid-cols-1 mx-auto md:grid-cols-2">
         <Room
           roomName="Living Room"
           lightOn={livingRoomLight}
