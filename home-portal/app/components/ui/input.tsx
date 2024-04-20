@@ -8,7 +8,15 @@ interface InputProps {} // Optional interface for future props
 const Input: React.FC<InputProps> = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState("");
-
+  const bodyMaker = (command : string) => {return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({"command": command}), // body data type must match "Content-Type" header
+  }}
+  const url = "http://localhost:5000/command";
+  
   useEffect(() => {
     const textArea = textAreaRef.current;
     if (textArea) {
@@ -30,7 +38,7 @@ const Input: React.FC<InputProps> = () => {
       {/* <button className='p-3'>
         <MicSVG />
       </button> */}
-      <button className='pr-1' onClick={() => {}}>
+      <button className='pr-1' onClick={() => {fetch(url, bodyMaker(text))}}>
         <SendSVG />
       </button>
     </div>
