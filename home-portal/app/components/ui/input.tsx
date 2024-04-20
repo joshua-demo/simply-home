@@ -29,7 +29,7 @@ const Input: React.FC<InputProps> = () => {
       {/* <button className='p-3'>
         <MicSVG />
       </button> */}
-      <button className='pr-1'>
+      <button className='pr-1' onClick={() => {}}>
         <SendSVG />
       </button>
     </div>
