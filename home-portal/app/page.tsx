@@ -5,6 +5,7 @@ import { TextGenerateEffect } from "./components/ui/text-generate-effect";
 import { useState } from "react";
 import { AnimatePresenceWrapper } from "./components/ui/animate-presence-wrapper";
 import { motion } from "framer-motion";
+import Input from "./components/ui/input";
 
 export default function Home() {
   // checks for the page background and text generation effect to be loaded
@@ -23,11 +24,7 @@ export default function Home() {
             className="rounded-[22px] bg-white dark:bg-zinc-900 !p-1"
             containerClassName="min-w-100px w-48 md:w-[600px]"
           >
-            <textarea
-              placeholder="What would you like your smart home to do?"
-              className="w-full m-0 text-center bg-transparent focus:outline-none text-2xl overflow-visible resize-none"
-            />
-            {/* Add microphone button */}
+            <Input />
           </BackgroundGradient>
         </AnimatePresenceWrapper>
       </motion.div>
