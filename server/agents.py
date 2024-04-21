@@ -17,7 +17,6 @@ class Response(Model):
     text: str
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY")) # configure Gemini client
 
 # get all functions from actions.py ---> used to pass to Gemini clients (for function calling)
 all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
@@ -53,10 +52,10 @@ async def startup(ctx: Context):
 
 @orchestrator.on_query(model=Request, replies={Response})
 async def query_handler(ctx: Context, sender: str, _query: Request):
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY")) # configure Gemini client
     ctx.logger.info(_query)
     try:
         command = _query.command
-        ctx.logger.info(functions_to_use)
 
         # send code to Gemini client 
         model = genai.GenerativeModel(
@@ -107,6 +106,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
 
 @tool_former.on_message(model=Response)
 async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY_V2")) # configure Gemini client
     ctx.logger.info(f"Received message from {sender}: {msg.text}")
     try:
         request = msg.text
@@ -117,22 +117,40 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
         )
         chat = model.start_chat(enable_automatic_function_calling=True)
         response = chat.send_message(request, tool_config=tool_config_from_mode("none"))
+
+
+        ctx.logger.info(response)
         if response is not None and response.candidates:
             # Extract function code from first candidate (assuming one function)
             first_candidate = response.candidates[0]
             function_code = first_candidate.content.parts[0].text
-            ctx.logger.info(f"Function code: {function_code}")
+            cleaned = markdown_to_function(markdown_text=function_code)
+            function_name = cleaned.split('def ')[1].split('(')[0].strip()
 
-            # call the function through Gemini function calling
-            chat = model.start_chat(enable_automatic_function_calling=True)
-            response = chat.send_message(
-                markdown_to_function(function_code), 
-                tool_config=tool_config_from_mode("any")
-            )
+            print("new function created:\n" + cleaned)
+
+            new_function = None
+            # execute the new function so we can reference it via Gemini client later
+            exec(cleaned, globals())
+
+            # find the new function + store it as a function object
+            for item in globals().values():
+                if callable(item) and item.__name__ == function_name:
+                    new_function = item
+                    break
+            
+            if new_function:
+                # call the newly generated function through Gemini function calling
+                chat = model.start_chat(enable_automatic_function_calling=True)
+                response = chat.send_message(
+                    "Run the function that was generated for me; it should have the name " + function_name,
+                    tools=functions_to_use.append(new_function),
+                    tool_config=tool_config_from_mode("any")
+                )
+                ctx.logger.info(response)
 
         else:
             # Handle case where no function is generated
-            function = None  # Or set a default value
             ctx.logger.info("No function generated in response")
 
     except Exception as e:
