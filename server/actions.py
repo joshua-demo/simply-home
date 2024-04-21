@@ -4,10 +4,11 @@ def turn_device_on(room:str, device:str):
     """
     Turn on a device
     Parameters: String "room" and String "device"
-    Valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
+    Valid rooms are "livingRoom", "kitchen", "bedroom"
     Valid devices are "light", "speaker"
 
     If no room is specified, default to using the living room.
+    If you want to turn on all devices in a room, turn each device in each room on individually. Don't separate function calls with a "\n"
     """
     url = "http://localhost:3001/api/turnOn"
     payload = {
@@ -26,7 +27,7 @@ def turn_device_off(room:str, device:str):
     """
     Turn off a device
     Parameters: String "room" and String "device"
-    Valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
+    Valid rooms are "livingRoom", "kitchen", "bedroom"
     Valid devices are "light", "speaker"
 
     If no room is specified, default to using the living room.
@@ -48,7 +49,7 @@ def set_room_light(room:str, color:str):
     """
     Changes the light in a room to a new color.
     Parameters: String "room" and String "color"
-    Valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
+    Valid rooms are "livingRoom", "kitchen", "bedroom"
     Valid colors are "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"
 
     If no room is specified, default to using the living room.
@@ -96,7 +97,9 @@ def stop_sound(room:str):
     """
     Stops the sound playing on a speaker.
     Parameters: String "room"
-    Valid rooms are "livingRoom", "kitchen", "bedroom". "frontHouse" is NOT valid because it has no speaker.
+    Valid rooms are "livingRoom", "kitchen", "bedroom".
+
+    If no room is specified, default to using the living room.
     """
     url = "http://localhost:3001/api/playSound"
     payload = {

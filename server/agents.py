@@ -64,7 +64,16 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         # send code to Gemini client 
         model = genai.GenerativeModel('models/gemini-1.5-pro-latest', tools=functions_to_use, system_instruction=instructions.orchestrator_instruction)
         chat = model.start_chat(enable_automatic_function_calling=True)
-        chat.send_message(command, tool_config=tool_config_from_mode("auto"))
+        chat.send_message(
+            command, 
+            tool_config=tool_config_from_mode("auto"), 
+            safety_settings={
+                'HATE': 'BLOCK_NONE',
+                'HARASSMENT': 'BLOCK_NONE',
+                'SEXUAL' : 'BLOCK_NONE',
+                'DANGEROUS' : 'BLOCK_NONE'
+            }
+        )
 
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
 
