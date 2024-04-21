@@ -122,6 +122,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
 
 @tool_former.on_message(model=Response)
 async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
+    requests.post("http://localhost:3000/api/setStep", json={"step": 1})
     # reconfigure Gemini client --> we're using two keys so we don't get rate limited quickly
     genai.configure(api_key=os.getenv("GEMINI_API_KEY_V2"))
     # get all functions from actions.py so Gemini can use function calling capabilities
@@ -176,9 +177,10 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
                     file.write('\n' + msg.text + '\n')
                 
                 importlib.reload(actions)
+                requests.post("http://localhost:3000/api/setStep", json={"step": 3})
                 getattr(actions, msg.function_name)()
             else:
-                # didn't pass the feedback loop, so reitterate and send back to the feedback loop for further testing
+                # didn't pass the feedback loop, so reiterate and send back to the feedback loop for further testing
                 ctx.logger.info(f"Code failed feedback loop")
                 # start chat with Gemini client (following docs...)
                 request = f"The function you previously generated failed the feedback loop. The error message was: {msg.message}. Your old code is: {msg.text}. You need to refactor the code to pass the feedback loop while accomplishing the same command, which is {msg.command}."
@@ -194,6 +196,7 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
 
 @feedback_agent.on_message(model=Response)
 async def feedback_agent_message_handler(ctx: Context, sender: str, msg: Response):
+    requests.post("http://localhost:3000/api/setStep", json={"step": 2})
     genai.configure(api_key=os.getenv("GEMINI_API_KEY_V3"))
     
     ctx.logger.info(f"Starting feedback process")

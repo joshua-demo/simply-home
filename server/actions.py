@@ -172,3 +172,26 @@ def check_camera():
         print("GET request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
+
+def make_christmas_theme():
+    turn_on("livingRoom", "light")
+    set_light_color("livingRoom", "red")
+    turn_on("kitchen", "light")
+    set_light_color("kitchen", "green")
+    turn_on("bedroom", "light")
+    set_light_color("bedroom", "red")
+    play_sound("livingRoom", "Jingle Bells")
+
+def make_halloween_theme():
+    turn_on("livingRoom", "light")
+    set_light_color("livingRoom", "orange")
+    turn_on("kitchen", "light")
+    set_light_color("kitchen", "orange")
+    turn_on("bedroom", "light")
+    set_light_color("bedroom", "orange")
+    play_sound("livingRoom", "thunder")
+
+def turn_off_all_lights():
+    turn_off("livingRoom", "light")
+    turn_off("kitchen", "light")
+    turn_off("bedroom", "light")
