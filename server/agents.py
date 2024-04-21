@@ -79,7 +79,8 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         )
 
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
-        requests.post("http://localhost:3000/api/setStep", json={"step": 3})
+        if has_function_call:
+            requests.post("http://localhost:3000/api/setStep", json={"step": 3})
 
         # remove this eventually; this just logs the chat history for debugging purposes
         chat_history_string = ""
@@ -115,6 +116,8 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
         chat = model.start_chat(enable_automatic_function_calling=True)
         function = chat.send_message(request, tool_config=tool_config_from_mode("none"))
         ctx.logger.info(f"Function generated: {function}")
+        as_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
+        requests.post("http://localhost:3000/api/setStep", json={"step": 3})
     except Exception as e:
         ctx.logger.error(f"An error occurred: {str(e)}")
         await ctx.send(sender, Response(text="fail"))
