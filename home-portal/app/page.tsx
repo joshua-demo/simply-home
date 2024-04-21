@@ -13,7 +13,7 @@ export default function Home() {
   const [showToast, setToast] = useState(false);
 
   return (
-    <BackgroundGradientAnimation className="absolute h-screen flex items-center justify-center mx-5 sm:mx-20">
+    <BackgroundGradientAnimation className="absolute h-screen w-screen flex items-center justify-center">
       <motion.div className="flex flex-col m-0 p-10 rounded-3xl bg-zinc-900 items-center !z-[1000]">
         <TextGenerateEffect
           words="Hi, how can I help you?"
