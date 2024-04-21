@@ -173,39 +173,17 @@ def check_camera():
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
 
-def make_christmas_theme():
+def turn_on_all_lights():
     turn_on("livingRoom", "light")
-    set_light_color("livingRoom", "red")
     turn_on("kitchen", "light")
-    set_light_color("kitchen", "green")
     turn_on("bedroom", "light")
-    set_light_color("bedroom", "red")
-    play_sound("livingRoom", "Jingle Bells")
 
-def make_halloween_theme():
+def turn_on_all_lights():
     turn_on("livingRoom", "light")
-    set_light_color("livingRoom", "orange")
     turn_on("kitchen", "light")
-    set_light_color("kitchen", "orange")
     turn_on("bedroom", "light")
-    set_light_color("bedroom", "orange")
-    play_sound("livingRoom", "thunder")
 
-def turn_off_all_lights():
-    turn_off("livingRoom", "light")
-    turn_off("kitchen", "light")
-    turn_off("bedroom", "light")
-
-def turn_off_everything():
-    turn_off("livingRoom", "light")
-    turn_off("livingRoom", "speaker")
-    turn_off("kitchen", "light")
-    turn_off("kitchen", "speaker")
-    turn_off("bedroom", "light")
-    turn_off("bedroom", "speaker")
-
-def make_house_spring_themed():
-    set_light_color("livingRoom", "yellow")
-    set_light_color("kitchen", "green")
-    set_light_color("bedroom", "fuchsia") 
-    play_sound("livingRoom", "birds chirping")
+def set_theme_to_ucla_colors():
+    set_light_color("livingRoom", "blue")
+    set_light_color("kitchen", "gold")
+    set_light_color("bedroom", "blue")
