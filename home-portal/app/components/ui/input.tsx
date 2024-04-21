@@ -2,12 +2,14 @@ import { cn } from '@/app/utils/cn';
 import React, { useState, useEffect, useRef } from 'react';
 import MicSVG from '../svg/mic';
 import SendSVG from '../svg/send';
+import { error } from 'console';
 
 interface InputProps {
   setToast: React.Dispatch<React.SetStateAction<boolean>>;
+  setMultiStepLoading: React.Dispatch<React.SetStateAction<boolean>>;
 } // Optional interface for future props
 
-const Input: React.FC<InputProps> = ({setToast}) => {
+const Input: React.FC<InputProps> = ({setToast, setMultiStepLoading}) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState("");
   const bodyMaker = (command : string) => {return {
@@ -21,8 +23,13 @@ const Input: React.FC<InputProps> = ({setToast}) => {
   const handleOnClick = async () => {
     fetch(url, bodyMaker(text))
     setText("");
-    setToast(true);
-    const timeout = setTimeout(() => {setToast(false)}, 3500)
+
+    setMultiStepLoading(true);
+
+    // if (error) {
+    //   setToast(true);
+    //   const timeout = setTimeout(() => {setToast(false)}, 3500)
+    // }
   }
   
   useEffect(() => {

@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from uagents import Agent, Bureau, Context, Model
 import instructions
 from collections.abc import Iterable
+import requests
 
 import actions # custom functions that will work on smart home devices
 
@@ -41,12 +42,14 @@ async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {orchestrator.name}")
     ctx.logger.info(f"With address: {orchestrator.address}")
     ctx.logger.info(f"And wallet address: {orchestrator.wallet.address()}")
+    requests.post("http://localhost:3000/api/setStep", json={"step": 0})
 
 @tool_former.on_event("startup")
 async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {tool_former.name}")
     ctx.logger.info(f"With address: {tool_former.address}")
     ctx.logger.info(f"And wallet address: {tool_former.wallet.address()}")
+    requests.post("http://localhost:3000/api/setStep", json={"step": 1})
 
 
 @orchestrator.on_query(model=Request, replies={Response})
@@ -76,6 +79,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         )
 
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
+        requests.post("http://localhost:3000/api/setStep", json={"step": 3})
 
         # remove this eventually; this just logs the chat history for debugging purposes
         chat_history_string = ""
