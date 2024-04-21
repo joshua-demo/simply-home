@@ -1,13 +1,14 @@
 import os
-from google.generativeai.types import content_types
 
 import google.generativeai as genai
+from google.generativeai.types import content_types
 from dotenv import load_dotenv
 from uagents import Agent, Bureau, Context, Model
 import instructions
 from collections.abc import Iterable
 
 import actions # custom functions that will work on smart home devices
+from utils import markdown_to_function
 
 class Request(Model):
     command: str
@@ -17,6 +18,10 @@ class Response(Model):
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY")) # configure Gemini client
+
+# get all functions from actions.py ---> used to pass to Gemini clients (for function calling)
+all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
+functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
 
 orchestrator = Agent(
    name="orchestrator", 
@@ -40,29 +45,25 @@ def tool_config_from_mode(mode: str, fns: Iterable[str] = ()):
 async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {orchestrator.name}")
     ctx.logger.info(f"With address: {orchestrator.address}")
-    ctx.logger.info(f"And wallet address: {orchestrator.wallet.address()}")
 
 @tool_former.on_event("startup")
 async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {tool_former.name}")
     ctx.logger.info(f"With address: {tool_former.address}")
-    ctx.logger.info(f"And wallet address: {tool_former.wallet.address()}")
-
 
 @orchestrator.on_query(model=Request, replies={Response})
 async def query_handler(ctx: Context, sender: str, _query: Request):
     ctx.logger.info(_query)
     try:
         command = _query.command
-
-        # get all functions from actions.py (got this from chatgpt)
-        all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
-        functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
-
         ctx.logger.info(functions_to_use)
 
         # send code to Gemini client 
-        model = genai.GenerativeModel('models/gemini-1.5-pro-latest', tools=functions_to_use, system_instruction=instructions.orchestrator_instruction)
+        model = genai.GenerativeModel(
+            'models/gemini-1.5-pro-latest', 
+            tools=functions_to_use, 
+            system_instruction=instructions.orchestrator_instruction,
+        )
         chat = model.start_chat(enable_automatic_function_calling=True)
         chat.send_message(
             command, 
@@ -78,6 +79,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
 
         # remove this eventually; this just logs the chat history for debugging purposes
+        '''
         chat_history_string = ""
         for content in chat.history:
             part = content.parts[0]
@@ -85,6 +87,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
             chat_history_string += '-'*80 + "\n"
         ctx.logger.info(chat_history_string)
         # remove above eventually....
+        '''
 
         if has_function_call:
             await ctx.send(sender, Response(text="successfully adjusted smart home"))
@@ -107,10 +110,31 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
     ctx.logger.info(f"Received message from {sender}: {msg.text}")
     try:
         request = msg.text
-        model = genai.GenerativeModel('models/gemini-1.5-pro-latest', system_instruction=instructions.tool_former_instruction)
+        model = genai.GenerativeModel(
+            'models/gemini-1.5-pro-latest', 
+            system_instruction=instructions.tool_former_instruction,
+            tools=functions_to_use,
+        )
         chat = model.start_chat(enable_automatic_function_calling=True)
-        function = chat.send_message(request, tool_config=tool_config_from_mode("none"))
-        ctx.logger.info(f"Function generated: {function}")
+        response = chat.send_message(request, tool_config=tool_config_from_mode("none"))
+        if response is not None and response.candidates:
+            # Extract function code from first candidate (assuming one function)
+            first_candidate = response.candidates[0]
+            function_code = first_candidate.content.parts[0].text
+            ctx.logger.info(f"Function code: {function_code}")
+
+            # call the function through Gemini function calling
+            chat = model.start_chat(enable_automatic_function_calling=True)
+            response = chat.send_message(
+                markdown_to_function(function_code), 
+                tool_config=tool_config_from_mode("any")
+            )
+
+        else:
+            # Handle case where no function is generated
+            function = None  # Or set a default value
+            ctx.logger.info("No function generated in response")
+
     except Exception as e:
         ctx.logger.error(f"An error occurred: {str(e)}")
         await ctx.send(sender, Response(text="fail"))
