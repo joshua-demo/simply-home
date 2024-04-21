@@ -52,23 +52,28 @@ async def startup(ctx: Context):
 
 @orchestrator.on_query(model=Request, replies={Response})
 async def query_handler(ctx: Context, sender: str, _query: Request):
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY")) # configure Gemini client
+    requests.post("http://localhost:3000/api/setStep", json={"step": 0})
+
+    # configure Gemini client --> we're using two keys so we don't get rate limited quickly
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
     ctx.logger.info(_query)
     try:
         command = _query.command
 
+        # reimport actions.py to account for any new functions that were added (by tool_former)
+        # then, get all functions from actions.py so Gemini can use function calling capabilities
         importlib.reload(actions)
-        # get all functions from actions.py ---> used to pass to Gemini clients (for function calling)
         all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
         functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
 
-        ctx.logger.info(functions_to_use)
         # send code to Gemini client 
         model = genai.GenerativeModel(
             'models/gemini-1.5-pro-latest', 
             tools=functions_to_use, 
             system_instruction=instructions.orchestrator_instruction,
         )
+
+        # start chat with Gemini client (following docs...)
         chat = model.start_chat(enable_automatic_function_calling=True)
         chat.send_message(
             command, 
@@ -81,32 +86,19 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
             }
         )
 
+        # boolean value to check if function call was made
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
         if has_function_call:
             ctx.logger.info("Calling function and settings steps to 3")
             requests.post("http://localhost:3000/api/setStep", json={"step": 3})
 
-        # remove this eventually; this just logs the chat history for debugging purposes
-        '''
-        chat_history_string = ""
-        for content in chat.history:
-            part = content.parts[0]
-            chat_history_string += f"{content.role} -> {type(part).__name__}: {part}\n"
-            chat_history_string += '-'*80 + "\n"
-        ctx.logger.info(chat_history_string)
-        # remove above eventually....
-        '''
-
-        if has_function_call:
-            await ctx.send(sender, Response(text="successfully adjusted smart home"))
+        # if a function call appears in the chat history, assume successful adjustment
+        if has_function_call: 
+            await ctx.send(sender, Response(text="Successfully adjusted smart home."))
+        # otherwise, go through tool_former to potentially generate a new function
         else:
-            # get new function(s) from tool_former
             await ctx.send(tool_former.address, Response(text=command))
-        
-        for content in chat.history:
-            part = content.parts[0]
-            print(content.role, "->", type(part).to_dict(part))
-            print('-'*80)
+
     except Exception as e:
         ctx.logger.error(f"An error occurred: {str(e)}")
         requests.post("http://localhost:3000/api/setStep", json={"step": -1})
@@ -114,12 +106,14 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
 
 @tool_former.on_message(model=Response)
 async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY_V2")) # configure Gemini client
-    ctx.logger.info(f"Received message from {sender}: {msg.text}")
+    # reconfigure Gemini client --> we're using two keys so we don't get rate limited quickly
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY_V2"))
     requests.post("http://localhost:3000/api/setStep", json={"step": 1})
+    
     try:
         request = msg.text
-        # get all functions from actions.py ---> used to pass to Gemini clients (for function calling)
+
+        # get all functions from actions.py so Gemini can use function calling capabilities
         all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
         functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
         model = genai.GenerativeModel(
@@ -127,51 +121,40 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
             system_instruction=instructions.tool_former_instruction,
             tools=functions_to_use,
         )
+
+        # start chat with Gemini client (following docs...)
         chat = model.start_chat(enable_automatic_function_calling=True)
         
         response = chat.send_message(request, tool_config=tool_config_from_mode("none"))
 
-        if response is not None and response.candidates:
-            # Extract function code from first candidate (assuming one function)
+        # verify that a NEW FUNCTION was made
+        if response is not None and response.candidates and \
+        "def" in response.candidates[0].content.parts[0].text:
+            # function code from first candidate
             first_candidate = response.candidates[0]
             function_code = first_candidate.content.parts[0].text
             cleaned = markdown_to_function(markdown_text=function_code)
             function_name = cleaned.split('def ')[1].split('(')[0].strip()
 
-            print("new function created:\n" + cleaned)
+            print("new function created: " + function_name + "\n" + cleaned +'\n')
 
-            new_function = None
-            # execute the new function so we can reference it via Gemini client later
             # append new function to actions.py
             with open('./actions.py', 'a') as file:
                 file.write('\n' + cleaned + '\n')
 
-            # get all functions from actions.py AGAIN (account for new function)
-            #import actions # reimport bc new function was added to actions.py
-            all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
-            new_functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
-            
-            print(new_functions_to_use)
-            # call the newly generated function through Gemini function calling
-            chat = model.start_chat(enable_automatic_function_calling=True)
-            response = chat.send_message(
-                "Run the function that was generated for me; it should have the name " + function_name,
-                tools=new_functions_to_use,
-                tool_config=tool_config_from_mode("any")
-            )
-            as_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
-            if as_function_call:
-                ctx.logger.info("Calling function and settings steps to 3")
-                requests.post("http://localhost:3000/api/setStep", json={"step": 3})
+            # get all functions from actions.py AGAIN (account for newly added function)
+            importlib.reload(actions)
+            requests.post("http://localhost:3000/api/setStep", json={"step": 3})
+            getattr(actions, function_name)()
 
-            ctx.logger.info(response)
-
+        # otherwise, the Tool Former did not generate a new function
+        # this is usually because the user's command wasn't smart-home related...
         else:
             # Handle case where no function is generated
             ctx.logger.info("No function generated in response")
             
     except Exception as e:
-        ctx.send(sender, Response(text="tool_former did not create a new function"))
+        await ctx.send(sender, Response(text="tool_former did not create a new function"))
         ctx.logger.error(f"An error occurred: {str(e)}")
         requests.post("http://localhost:3000/api/setStep", json={"step": -1})
         await ctx.send(sender, Response(text="fail"))

@@ -161,3 +161,34 @@ def check_camera():
         print("GET request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
+def turn_on_all_lights():
+    turn_device_on("livingRoom", "light")
+    turn_device_on("kitchen", "light")
+    turn_device_on("bedroom", "light")
+
+def turn_off_all_lights():
+    turn_device_off("livingRoom", "light")
+    turn_device_off("kitchen", "light")
+    turn_device_off("bedroom", "light")
+
+def set_lights_to_police_colors():
+	set_light_color("livingRoom", "red")
+	set_light_color("kitchen", "blue")
+	set_light_color("bedroom", "red")
+
+def play_party_music_on_all_speakers():
+    play_sound("livingRoom", "party music")
+    play_sound("kitchen", "party music")
+    play_sound("bedroom", "party music")
+
+import random
+def set_all_lights_random_color():
+    colors = ["aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"]
+    for room in ["livingRoom", "kitchen", "bedroom"]:
+        set_light_color(room, random.choice(colors))
+
+import random
+def set_bedroom_light_to_random_color():
+    colors = ["aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"]
+    random_color = random.choice(colors)
+    requests.post("http://localhost:5000/setLightColor", json={"room": "bedroom", "color": random_color})
