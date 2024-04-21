@@ -109,13 +109,13 @@ export const MultiStepLoader = ({
 
   async function checkStepsFromServer() {    
     const newState : number = await getStep();
-    if (newState === -1) {{
+    setCurrentState(newState);
+    if (newState === -1) {
       setToast(true);
       const timeout = setTimeout(() => {setToast(false)}, 3500)
       await setStep(0);
       setLoading(false);
-    }}
-    else if (newState === LAST_STEP) {
+    } else if (newState === LAST_STEP) {
       setTimeout(async () => {
         // reset the step to 0
         await setStep(0);
@@ -128,13 +128,13 @@ export const MultiStepLoader = ({
   }
 
   {/* manual clock */}
-useEffect(() => {
-  const interval = setInterval(() => {
-    checkStepsFromServer(); // Call the function directly
-  }, 1000); // Check every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkStepsFromServer(); // Call the function directly
+    }, 1000); // Check every second
 
-  return () => clearInterval(interval);
-}, []);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <AnimatePresence mode="wait">

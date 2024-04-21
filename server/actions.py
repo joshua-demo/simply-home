@@ -195,3 +195,17 @@ def turn_off_all_lights():
     turn_off("livingRoom", "light")
     turn_off("kitchen", "light")
     turn_off("bedroom", "light")
+
+def turn_off_everything():
+    turn_off("livingRoom", "light")
+    turn_off("livingRoom", "speaker")
+    turn_off("kitchen", "light")
+    turn_off("kitchen", "speaker")
+    turn_off("bedroom", "light")
+    turn_off("bedroom", "speaker")
+
+def make_house_spring_themed():
+    set_light_color("livingRoom", "yellow")
+    set_light_color("kitchen", "green")
+    set_light_color("bedroom", "fuchsia") 
+    play_sound("livingRoom", "birds chirping")
