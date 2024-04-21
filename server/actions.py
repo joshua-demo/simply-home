@@ -1,16 +1,18 @@
 import requests
 
-def turn_device_on(room_and_device:str):
+def turn_device_on(room:str, device:str):
     """
     Turn on a device
     Parameters: String "room" and String "device"
     Valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
     Valid devices are "light", "speaker"
+
+    If no room is specified, default to using the living room.
     """
     url = "http://localhost:3001/api/turnOn"
     payload = {
-        "room": room_and_device.split(" ")[0],
-        "device": room_and_device.split(" ")[1]
+        "room": room,
+        "device": device
     }
 
     try:
@@ -20,17 +22,19 @@ def turn_device_on(room_and_device:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-def turn_device_off(room_and_device:str):
+def turn_device_off(room:str, device:str):
     """
     Turn off a device
     Parameters: String "room" and String "device"
     Valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
     Valid devices are "light", "speaker"
+
+    If no room is specified, default to using the living room.
     """
     url = "http://localhost:3001/api/turnOff"
     payload = {
-        "room": room_and_device.split(" ")[0],
-        "device": room_and_device.split(" ")[1]
+        "room": room,
+        "device": device
     }
 
     try:
@@ -40,17 +44,20 @@ def turn_device_off(room_and_device:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-def set_living_room_light(color_name:str):
+def set_room_light(room:str, color:str):
     """
-    Changes the living room light to a new color.
+    Changes the light in a room to a new color.
+    Parameters: String "room" and String "color"
+    Valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
     Valid colors are "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"
-    Styling is done via tailwind; if a user wants darker color, they can add -600 to the color name. For example, "red-600" is a darker red.
+
+    If no room is specified, default to using the living room.
     """
     url = "http://localhost:3001/api/setLightColor"
 
     payload = {
-        "room": "livingRoom",
-        "color": color_name
+        "room": room,
+        "color": color
     }
 
     try:
@@ -60,17 +67,21 @@ def set_living_room_light(color_name:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-def play_sound(room_and_sound:str):
+def play_sound(room:str, sound:str):
     """
     Plays a selected sound on a speaker.
     Parameters: String "room" and String "sound"
     Valid rooms are "livingRoom", "kitchen", "bedroom". "frontHouse" is NOT valid because it has no speaker.
     Valid sounds are "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomatopoeia.
+
+    If a user asks to play a song, just set the sound to the song name. For example, "livingRoom Hello" will play a song titled "Hello" in the living room.
+
+    If no room is specified, default to using the living room.
     """
     url = "http://localhost:3001/api/playSound"
     payload = {
-        "room": room_and_sound.split(" ")[0],
-        "sound": room_and_sound.split(" ")[1]
+        "room": room,
+        "sound": sound
     }
 
     try:
