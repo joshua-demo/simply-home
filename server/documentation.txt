@@ -53,7 +53,7 @@ String "room" and String "color"
  - valid colors are "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"
 
 POST /playSound
-Plays a selected sound on a speaker.
+Plays a selected sound on a speaker and turns the speaker on.
 Parameters:
 String "room" and String "sound"
  - valid rooms are "livingRoom", "kitchen", "bedroom"

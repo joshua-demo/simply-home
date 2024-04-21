@@ -1,6 +1,6 @@
 import requests
 
-def turn_device_on(room:str, device:str):
+def turn_on(room:str, device:str):
     """
     Turn on a device
     Parameters: String "room" and String "device"
@@ -22,20 +22,8 @@ def turn_device_on(room:str, device:str):
         print("POST request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
-
-'''
-def turn_lights_on_in_all_rooms():
-    turn_device_on("livingRoom", "light")
-    turn_device_on("kitchen", "light")
-    turn_device_on("bedroom", "light")
-
-def turn_light_off_in_all_rooms():
-    turn_device_off("livingRoom", "light")
-    turn_device_off("kitchen", "light")
-    turn_device_off("bedroom", "light")
-'''
     
-def turn_device_off(room:str, device:str):
+def turn_off(room:str, device:str):
     """
     Turn off a device
     Parameters: String "room" and String "device"
@@ -57,7 +45,7 @@ def turn_device_off(room:str, device:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-def set_room_light(room:str, color:str):
+def set_light_color(room:str, color:str):
     """
     Changes the light in a room to a new color.
     Parameters: String "room" and String "color"
@@ -104,28 +92,6 @@ def play_sound(room:str, sound:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-
-def stop_sound(room:str):
-    """
-    Stops the sound playing on a speaker.
-    Parameters: String "room"
-    Valid rooms are "livingRoom", "kitchen", "bedroom".
-
-    If no room is specified, default to using the living room.
-    """
-    url = "http://localhost:3001/api/playSound"
-    payload = {
-        "room": room,
-        "sound": ""
-    }
-
-    try:
-        response = requests.post(url, json=payload)
-        response.raise_for_status()
-        print("POST request successful:", response.status_code)
-    except requests.exceptions.RequestException as e:
-        print("Error making POST request:", e)
-
 def lock_door():
     """
     Lock the door to the house. There's only one door.
@@ -161,12 +127,3 @@ def check_camera():
         print("GET request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
-def turn_on_all_lights():
-    turn_device_on("livingRoom", "light")
-    turn_device_on("kitchen", "light")
-    turn_device_on("bedroom", "light")
-
-def turn_off_all_lights():
-    turn_device_off("livingRoom", "light")
-    turn_device_off("kitchen", "light")
-    turn_device_off("bedroom", "light")
