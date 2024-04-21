@@ -42,6 +42,10 @@ const Input: React.FC<InputProps> = ({setToast}) => {
         className={"p-4 w-full text-center bg-transparent focus:outline-none text-2xl resize-none max-h-[50vh] lg:max-h-[55vh]"}
         onChange={(e) => setText(e.target.value)}
         value={text}
+        onKeyDown={(e) => {
+          if (e.key === "Enter")
+            handleOnClick()
+        }}
       />
       {/* TODO: support text to speech */}
       {/* <button className='p-3'>
