@@ -161,3 +161,12 @@ def check_camera():
         print("GET request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
+def turn_on_all_lights():
+    turn_device_on("livingRoom", "light")
+    turn_device_on("kitchen", "light")
+    turn_device_on("bedroom", "light")
+
+def turn_off_all_lights():
+    turn_device_off("livingRoom", "light")
+    turn_device_off("kitchen", "light")
+    turn_device_off("bedroom", "light")
