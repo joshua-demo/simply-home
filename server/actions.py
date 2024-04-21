@@ -23,6 +23,18 @@ def turn_device_on(room:str, device:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
+'''
+def turn_lights_on_in_all_rooms():
+    turn_device_on("livingRoom", "light")
+    turn_device_on("kitchen", "light")
+    turn_device_on("bedroom", "light")
+
+def turn_light_off_in_all_rooms():
+    turn_device_off("livingRoom", "light")
+    turn_device_off("kitchen", "light")
+    turn_device_off("bedroom", "light")
+'''
+    
 def turn_device_off(room:str, device:str):
     """
     Turn off a device
@@ -73,11 +85,11 @@ def play_sound(room:str, sound:str):
     Plays a selected sound on a speaker.
     Parameters: String "room" and String "sound"
     Valid rooms are "livingRoom", "kitchen", "bedroom". "frontHouse" is NOT valid because it has no speaker.
-    Valid sounds are "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomatopoeia.
+    Valid sounds are "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomatopoeia. If there is a sense of urgency, make the sound in ALL CAPS.
 
     If a user asks to play a song, just set the sound to the song name. For example, "livingRoom Hello" will play a song titled "Hello" in the living room.
 
-    If no room is specified, default to using the living room.
+    If no room is specified, default to using the living room. DO NOT play the sound in the frontHouse.
     """
     url = "http://localhost:3001/api/playSound"
     payload = {
