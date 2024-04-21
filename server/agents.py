@@ -1,4 +1,5 @@
 import os
+import json
 
 import google.generativeai as genai
 from google.generativeai.types import content_types
@@ -16,6 +17,11 @@ class Request(Model):
 
 class Response(Model):
     text: str
+    command: str = None
+    message: str = None
+    status: int = None
+    function_name: str = None
+    
 
 load_dotenv()
 
@@ -28,6 +34,12 @@ orchestrator = Agent(
 tool_former = Agent(
     name="tool_former",
     seed="tool_former recovery phrase",
+    endpoint=["http://localhost:8001/submit"],
+)
+
+feedback_agent = Agent(
+    name="feedback_agent",
+    seed="feedback_agent recovery phrase",
     endpoint=["http://localhost:8001/submit"],
 )
 
@@ -46,6 +58,11 @@ async def startup(ctx: Context):
 async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {tool_former.name}")
     ctx.logger.info(f"With address: {tool_former.address}")
+    
+@feedback_agent.on_event("startup")
+async def startup(ctx: Context):
+    ctx.logger.info(f"Starting up {feedback_agent.name}")
+    ctx.logger.info(f"With address: {feedback_agent.address}")
 
 @orchestrator.on_query(model=Request, replies={Response})
 async def query_handler(ctx: Context, sender: str, _query: Request):
@@ -87,70 +104,121 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
 
         # if a function call appears in the chat history, assume successful adjustment
         if has_function_call: 
-            await ctx.send(sender, Response(text="Successfully adjusted smart home."))
+            await ctx.send(sender, Response(text="Successfully adjusted smart home.", command=command))
         # otherwise, go through tool_former to potentially generate a new function
         else:
-            await ctx.send(tool_former.address, Response(text=command))
+            await ctx.send(tool_former.address, Response(text=command, command=command))
 
     except Exception as e:
         ctx.logger.error(f"An error occurred: {str(e)}")
-        await ctx.send(sender, Response(text="Error in adjusting smart home."))
+        await ctx.send(sender, Response(text="Error in adjusting smart home.", command=command))
 
 @tool_former.on_message(model=Response)
 async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
     # reconfigure Gemini client --> we're using two keys so we don't get rate limited quickly
     genai.configure(api_key=os.getenv("GEMINI_API_KEY_V2"))
-    ctx.logger.info(f"Time to form a new function!\n")
-
+    # get all functions from actions.py so Gemini can use function calling capabilities
+    all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
+    functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
+    model = genai.GenerativeModel(
+        'models/gemini-1.5-pro-latest', 
+        system_instruction=instructions.tool_former_instruction,
+        tools=functions_to_use,
+    )
+    
     try:
-        request = msg.text
+        if (sender == orchestrator.address):
+            ctx.logger.info(f"Time to form a new function!\n")
+            request = msg.text
+            command = msg.command
 
-        # get all functions from actions.py so Gemini can use function calling capabilities
-        all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
-        functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
-        model = genai.GenerativeModel(
-            'models/gemini-1.5-pro-latest', 
-            system_instruction=instructions.tool_former_instruction,
-            tools=functions_to_use,
-        )
+            # start chat with Gemini client (following docs...)
+            chat = model.start_chat(enable_automatic_function_calling=True)
+            response = chat.send_message(request, tool_config=tool_config_from_mode("none"), safety_settings={'HATE': 'BLOCK_NONE','HARASSMENT': 'BLOCK_NONE','SEXUAL' : 'BLOCK_NONE','DANGEROUS' : 'BLOCK_NONE'})
 
-        # start chat with Gemini client (following docs...)
-        chat = model.start_chat(enable_automatic_function_calling=True)
-        response = chat.send_message(request, tool_config=tool_config_from_mode("none"))
+            # verify that a NEW FUNCTION was made
+            if response is not None and response.candidates and \
+            "def" in response.candidates[0].content.parts[0].text:
+                # function code from first candidate
+                first_candidate = response.candidates[0]
+                function_code = first_candidate.content.parts[0].text
+                cleaned = markdown_to_function(markdown_text=function_code)
+                function_name = cleaned.split('def ')[1].split('(')[0].strip()
 
-        # verify that a NEW FUNCTION was made
-        if response is not None and response.candidates and \
-        "def" in response.candidates[0].content.parts[0].text:
-            # function code from first candidate
-            first_candidate = response.candidates[0]
-            function_code = first_candidate.content.parts[0].text
-            cleaned = markdown_to_function(markdown_text=function_code)
-            function_name = cleaned.split('def ')[1].split('(')[0].strip()
+                print("new function created: " + function_name + "\n" + cleaned +'\n')
 
-            print("new function created: " + function_name + "\n" + cleaned +'\n')
+                # verify the generated function with the feedback loop agent
+                await ctx.send(feedback_agent.address, Response(text=cleaned, command=command, function_name=function_name))
+                ctx.logger.info(f"Sent new function to feedback agent for verification")
 
-            # append new function to actions.py
-            with open('./actions.py', 'a') as file:
-                file.write('\n' + cleaned + '\n')
-
-            # get all functions from actions.py AGAIN (account for newly added function)
-            importlib.reload(actions)
-            getattr(actions, function_name)()
-
-        # otherwise, the Tool Former did not generate a new function
-        # this is usually because the user's command wasn't smart-home related...
+            # otherwise, the Tool Former did not generate a new function
+            # this is usually because the user's command wasn't smart-home related...
+            else:
+                # Handle case where no function is generated
+                ctx.logger.info("No function generated in response")
         else:
-            # Handle case where no function is generated
-            ctx.logger.info("No function generated in response")
+            
+            # logic for receiving message from feedback agent
+            if (msg.status == 200):
+                # passed the feedback loop, so run the function
+                ctx.logger.info(f"Code passed feedback loop")
+                # get all functions from actions.py AGAIN (account for newly added function)
+
+                # append new function to actions.py
+                with open('./actions.py', 'a') as file:
+                    file.write('\n' + msg.text + '\n')
+                
+                importlib.reload(actions)
+                getattr(actions, msg.function_name)()
+            else:
+                # didn't pass the feedback loop, so reitterate and send back to the feedback loop for further testing
+                ctx.logger.info(f"Code failed feedback loop")
+                # start chat with Gemini client (following docs...)
+                request = f"The function you previously generated failed the feedback loop. The error message was: {msg.message}. Your old code is: {msg.text}. You need to refactor the code to pass the feedback loop while accomplishing the same command, which is {msg.command}."
+                chat = model.start_chat(enable_automatic_function_calling=True)
+                response = chat.send_message(request, tool_config=tool_config_from_mode("none"), safety_settings={'HATE': 'BLOCK_NONE','HARASSMENT': 'BLOCK_NONE','SEXUAL' : 'BLOCK_NONE','DANGEROUS' : 'BLOCK_NONE'})
+                await ctx.send(feedback_agent.address, Response(text=msg.text, command=msg.command, function_name=msg.function_name))
 
     except Exception as e:
-        await ctx.send(sender, Response(text="tool_former did not create a new function"))
+        await ctx.send(orchestrator.address, Response(text="Error creating a new function"))
         ctx.logger.error(f"An error occurred: {str(e)}")
 
+@feedback_agent.on_message(model=Response)
+async def feedback_agent_message_handler(ctx: Context, sender: str, msg: Response):
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY_V3"))
+    
+    ctx.logger.info(f"Starting feedback process")
+    try:
+        function = msg.text
+        command = msg.command
+
+        model = genai.GenerativeModel(
+            'models/gemini-1.5-pro-latest', 
+            system_instruction=instructions.feedback_agent_instruction,
+            generation_config={"response_mime_type": "application/json"}
+        )
+
+        message = f"The description of what the function should be doing is: {function}. The code of the command is {command}."
+
+        chat = model.start_chat()
+        response_str = chat.send_message(message, tool_config=tool_config_from_mode("none"), safety_settings={'HATE': 'BLOCK_NONE','HARASSMENT': 'BLOCK_NONE','SEXUAL' : 'BLOCK_NONE','DANGEROUS' : 'BLOCK_NONE'})
+        # Load the JSON string
+        response_json = json.loads(response_str.text)
+
+        # Access message and status directly from the JSON object
+        message_json = response_json['message']
+        status_json = response_json['status']
+        
+        ctx.logger.info(f"message {message_json} with status code {status_json}")
+        await ctx.send(tool_former.address, Response(text=function, command=command, message=message_json, status=status_json, function_name=msg.function_name))
+        
+    except Exception as e:
+        ctx.logger.error(f"An error occurred: {str(e)}")
 
 community = Bureau(port=8001)
 community.add(orchestrator)
 community.add(tool_former)
+community.add(feedback_agent)
 
 if __name__ == "__main__":
     community.run()

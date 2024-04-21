@@ -22,8 +22,53 @@ def turn_on(room:str, device:str):
         print("POST request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
+
+def turn_device_on(room:str, device:str):
+    """
+    Turn on a device
+    Parameters: String "room" and String "device"
+    Valid rooms are "livingRoom", "kitchen", "bedroom"
+    Valid devices are "light", "speaker"
+
+    If no room is specified, default to using the living room.
+    If you want to turn on all devices in a room, turn each device in each room on individually. Don't separate function calls with a "\n"
+    """
+    url = "http://localhost:3001/api/turnOn"
+    payload = {
+        "room": room,
+        "device": device
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        print("POST request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making POST request:", e)
     
 def turn_off(room:str, device:str):
+    """
+    Turn off a device
+    Parameters: String "room" and String "device"
+    Valid rooms are "livingRoom", "kitchen", "bedroom"
+    Valid devices are "light", "speaker"
+
+    If no room is specified, default to using the living room.
+    """
+    url = "http://localhost:3001/api/turnOff"
+    payload = {
+        "room": room,
+        "device": device
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        print("POST request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making POST request:", e)
+
+def turn_device_off(room:str, device:str):
     """
     Turn off a device
     Parameters: String "room" and String "device"
