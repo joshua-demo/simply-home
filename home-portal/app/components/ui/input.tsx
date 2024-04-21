@@ -25,11 +25,6 @@ const Input: React.FC<InputProps> = ({setToast, setMultiStepLoading}) => {
     setText("");
 
     setMultiStepLoading(true);
-
-    // if (error) {
-    //   setToast(true);
-    //   const timeout = setTimeout(() => {setToast(false)}, 3500)
-    // }
   }
   
   useEffect(() => {

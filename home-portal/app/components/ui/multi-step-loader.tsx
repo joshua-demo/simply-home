@@ -97,24 +97,32 @@ export const MultiStepLoader = ({
   loading,
   duration = 2000,
   setLoading,
+  setToast,
 }: {
   loadingStates: LoadingState[];
   loading?: boolean;
   duration?: number;
   setLoading: (loading: boolean) => void;
+  setToast: (toast: boolean) => void;
 }) => {
   const [currentState, setCurrentState] = useState(0);
 
   async function checkStepsFromServer() {    
     const newState : number = await getStep();
-    if (newState === LAST_STEP) {
+    if (newState === -1) {{
+      setToast(true);
+      const timeout = setTimeout(() => {setToast(false)}, 3500)
+      await setStep(0);
+      setLoading(false);
+    }}
+    else if (newState === LAST_STEP) {
       setTimeout(async () => {
         // reset the step to 0
         await setStep(0);
         setLoading(false);
       }, duration);
     }
-    if (currentState !== newState) {
+    else if (currentState !== newState) {
         setCurrentState(newState);
     }
   }

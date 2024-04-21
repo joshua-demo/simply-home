@@ -23,7 +23,7 @@ export default function Home() {
 
   return (
     <BackgroundGradientAnimation className="absolute h-screen w-screen flex items-center justify-center">
-      <MultiStepLoader loadingStates={loadingStates} loading={multiStepLoading} setLoading={setMultiStepLoading} duration={1000}/>
+      <MultiStepLoader loadingStates={loadingStates} loading={multiStepLoading} setLoading={setMultiStepLoading} duration={1000} setToast={setToast} />
       <motion.div className="flex flex-col m-0 p-10 rounded-3xl bg-zinc-900 items-center !z-[1000]">
         <TextGenerateEffect
           words="Hi, how can I help you?"
@@ -39,8 +39,9 @@ export default function Home() {
           </BackgroundGradient>
         </AnimatePresenceWrapper>
         <AnimatePresenceWrapper isVisible={showToast}>
-          <p className="text-lime-400 mt-3">
-            Got your request! This may take a minute.
+          <p className="text-red-500 mt-3">
+            Error sending command. Please try again in a few seconds.
+            Darn api rate limits.
           </p>
         </AnimatePresenceWrapper>
       </motion.div>

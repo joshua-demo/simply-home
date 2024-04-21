@@ -49,7 +49,6 @@ async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {tool_former.name}")
     ctx.logger.info(f"With address: {tool_former.address}")
     ctx.logger.info(f"And wallet address: {tool_former.wallet.address()}")
-    requests.post("http://localhost:3000/api/setStep", json={"step": 1})
 
 
 @orchestrator.on_query(model=Request, replies={Response})
@@ -80,6 +79,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
 
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
         if has_function_call:
+            ctx.logger.info("Calling function and settings steps to 3")
             requests.post("http://localhost:3000/api/setStep", json={"step": 3})
 
         # remove this eventually; this just logs the chat history for debugging purposes
@@ -105,11 +105,13 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
           print('-'*80)
     except Exception as e:
         ctx.logger.error(f"An error occurred: {str(e)}")
+        requests.post("http://localhost:3000/api/setStep", json={"step": -1})
         await ctx.send(sender, Response(text="fail"))
 
 @tool_former.on_message(model=Response)
 async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
     ctx.logger.info(f"Received message from {sender}: {msg.text}")
+    requests.post("http://localhost:3000/api/setStep", json={"step": 1})
     try:
         request = msg.text
         model = genai.GenerativeModel('models/gemini-1.5-pro-latest', system_instruction=instructions.tool_former_instruction)
@@ -117,9 +119,12 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
         function = chat.send_message(request, tool_config=tool_config_from_mode("none"))
         ctx.logger.info(f"Function generated: {function}")
         as_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
-        requests.post("http://localhost:3000/api/setStep", json={"step": 3})
+        if as_function_call:
+            ctx.logger.info("Calling function and settings steps to 3")
+            requests.post("http://localhost:3000/api/setStep", json={"step": 3})
     except Exception as e:
         ctx.logger.error(f"An error occurred: {str(e)}")
+        requests.post("http://localhost:3000/api/setStep", json={"step": -1})
         await ctx.send(sender, Response(text="fail"))
 
 
