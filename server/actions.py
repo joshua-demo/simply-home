@@ -1,6 +1,6 @@
 import requests
 
-def turn_device_on(room:str, device:str):
+def turn_on(room:str, device:str):
     """
     Turn on a device
     Parameters: String "room" and String "device"
@@ -23,18 +23,51 @@ def turn_device_on(room:str, device:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-'''
-def turn_lights_on_in_all_rooms():
-    turn_device_on("livingRoom", "light")
-    turn_device_on("kitchen", "light")
-    turn_device_on("bedroom", "light")
+def turn_device_on(room:str, device:str):
+    """
+    Turn on a device
+    Parameters: String "room" and String "device"
+    Valid rooms are "livingRoom", "kitchen", "bedroom"
+    Valid devices are "light", "speaker"
 
-def turn_light_off_in_all_rooms():
-    turn_device_off("livingRoom", "light")
-    turn_device_off("kitchen", "light")
-    turn_device_off("bedroom", "light")
-'''
+    If no room is specified, default to using the living room.
+    If you want to turn on all devices in a room, turn each device in each room on individually. Don't separate function calls with a "\n"
+    """
+    url = "http://localhost:3001/api/turnOn"
+    payload = {
+        "room": room,
+        "device": device
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        print("POST request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making POST request:", e)
     
+def turn_off(room:str, device:str):
+    """
+    Turn off a device
+    Parameters: String "room" and String "device"
+    Valid rooms are "livingRoom", "kitchen", "bedroom"
+    Valid devices are "light", "speaker"
+
+    If no room is specified, default to using the living room.
+    """
+    url = "http://localhost:3001/api/turnOff"
+    payload = {
+        "room": room,
+        "device": device
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        print("POST request successful:", response.status_code)
+    except requests.exceptions.RequestException as e:
+        print("Error making POST request:", e)
+
 def turn_device_off(room:str, device:str):
     """
     Turn off a device
@@ -57,7 +90,7 @@ def turn_device_off(room:str, device:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-def set_room_light(room:str, color:str):
+def set_light_color(room:str, color:str):
     """
     Changes the light in a room to a new color.
     Parameters: String "room" and String "color"
@@ -104,28 +137,6 @@ def play_sound(room:str, sound:str):
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
 
-
-def stop_sound(room:str):
-    """
-    Stops the sound playing on a speaker.
-    Parameters: String "room"
-    Valid rooms are "livingRoom", "kitchen", "bedroom".
-
-    If no room is specified, default to using the living room.
-    """
-    url = "http://localhost:3001/api/playSound"
-    payload = {
-        "room": room,
-        "sound": ""
-    }
-
-    try:
-        response = requests.post(url, json=payload)
-        response.raise_for_status()
-        print("POST request successful:", response.status_code)
-    except requests.exceptions.RequestException as e:
-        print("Error making POST request:", e)
-
 def lock_door():
     """
     Lock the door to the house. There's only one door.
@@ -161,34 +172,3 @@ def check_camera():
         print("GET request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
-def turn_on_all_lights():
-    turn_device_on("livingRoom", "light")
-    turn_device_on("kitchen", "light")
-    turn_device_on("bedroom", "light")
-
-def turn_off_all_lights():
-    turn_device_off("livingRoom", "light")
-    turn_device_off("kitchen", "light")
-    turn_device_off("bedroom", "light")
-
-def set_lights_to_police_colors():
-	set_light_color("livingRoom", "red")
-	set_light_color("kitchen", "blue")
-	set_light_color("bedroom", "red")
-
-def play_party_music_on_all_speakers():
-    play_sound("livingRoom", "party music")
-    play_sound("kitchen", "party music")
-    play_sound("bedroom", "party music")
-
-import random
-def set_all_lights_random_color():
-    colors = ["aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"]
-    for room in ["livingRoom", "kitchen", "bedroom"]:
-        set_light_color(room, random.choice(colors))
-
-import random
-def set_bedroom_light_to_random_color():
-    colors = ["aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"]
-    random_color = random.choice(colors)
-    requests.post("http://localhost:5000/setLightColor", json={"room": "bedroom", "color": random_color})

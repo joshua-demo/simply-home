@@ -14,3 +14,6 @@ def markdown_to_function(markdown_text:str):
     python_code = re.sub(r'^(?:[*_-]|\d+\.)\s+', '', python_code, flags=re.MULTILINE)
 
     return python_code.strip() 
+
+# feedback loop function to verify the output of the generated output
+# def feedback():

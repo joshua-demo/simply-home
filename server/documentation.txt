@@ -1,4 +1,4 @@
-All basic api routes require a deviceId.
+All basic api routes require a room and device.
 These are the rooms in the house:
     "livingRoom", 
     "kitchen", 
@@ -25,51 +25,51 @@ A lock has attributes
 A camera has attributes
     "item": string,
 
-The "livingRoom" has 1 "light" device and 1 "speaker" device
-The "kitchen" has 1 "light" device and 1 "speaker" device
-The "bedroom" has 1 "light" device and 1 "speaker" device
-The "frontHouse" has 1 "lock" device" and 1 "camera" device
+The "livingRoom" has 1 "light" and 1 "speaker"
+The "kitchen" has 1 "light" and 1 "speaker"
+The "bedroom" has 1 "light" and 1 "speaker"
+The "frontHouse" has 1 "lock"" and 1 "camera"
 
 
-POST /turnOn
+POST /turn_on
 Turns on the specified device.
 Parameters:
 String "room" and String "device"
  - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
  - valid devices are "light", "speaker"
 
-POST /turnOff
+POST /turn_off
 Turns off the specified device.
 Parameters:
 String "room" and String "device"
  - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
  - valid devices are "light", "speaker"
 
-POST /setLightColor
+POST /set_light_color
 Sets the color of the specified light.
 Parameters:
 String "room" and String "color"
  - valid rooms are "livingRoom", "kitchen", "bedroom", "frontHouse"
  - valid colors are "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "purple", "red", "silver", "teal", "white", "yellow"
 
-POST /playSound
-Plays a selected sound on a speaker.
+POST /play_sound
+Plays a selected sound on a speaker and turns the speaker on.
 Parameters:
 String "room" and String "sound"
  - valid rooms are "livingRoom", "kitchen", "bedroom"
  - valid sounds are "alarm", "doorbell", "dog", "fire", "siren", "thunder", "water", a specific song name, or onomatopoeia.
 
-POST /lockDoor
+POST /lock_door
 Locks the front door.
 Parameters:
 None
 
-POST /unlockDoor
+POST /unlock_door
 Unlocks the specified door
 Parameters:
 None
 
-GET /checkCamera() : string
+GET /check_camera() : string
 Parameters:
 None
 Returns:
