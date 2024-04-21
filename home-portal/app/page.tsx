@@ -10,6 +10,7 @@ import Input from "./components/ui/input";
 export default function Home() {
   // checks for the page background and text generation effect to be loaded
   const [loading, setLoading] = useState(true);
+  const [showToast, setToast] = useState(false);
 
   return (
     <BackgroundGradientAnimation className="w-full, h-full flex items-center justify-center mx-5 sm:mx-20">
@@ -24,8 +25,11 @@ export default function Home() {
             className="rounded-[22px] bg-white dark:bg-zinc-900 !p-1"
             containerClassName="min-w-100px w-48 md:w-[600px]"
           >
-            <Input />
+            <Input setToast={setToast} />
           </BackgroundGradient>
+        </AnimatePresenceWrapper>
+        <AnimatePresenceWrapper isVisible={showToast}>
+          <p className="text-lime-400 mt-3">Got your request! This may take a minute.</p>
         </AnimatePresenceWrapper>
       </motion.div>
     </BackgroundGradientAnimation>

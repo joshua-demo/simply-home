@@ -3,9 +3,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import MicSVG from '../svg/mic';
 import SendSVG from '../svg/send';
 
-interface InputProps {} // Optional interface for future props
+interface InputProps {
+  setToast: React.Dispatch<React.SetStateAction<boolean>>;
+} // Optional interface for future props
 
-const Input: React.FC<InputProps> = () => {
+const Input: React.FC<InputProps> = ({setToast}) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState("");
   const bodyMaker = (command : string) => {return {
@@ -16,6 +18,12 @@ const Input: React.FC<InputProps> = () => {
     body: JSON.stringify({"command": command}), // body data type must match "Content-Type" header
   }}
   const url = "http://localhost:8000/command";
+  const handleOnClick = async () => {
+    fetch(url, bodyMaker(text))
+    setText("");
+    setToast(true);
+    const timeout = setTimeout(() => {setToast(false)}, 3500)
+  }
   
   useEffect(() => {
     const textArea = textAreaRef.current;
@@ -38,7 +46,7 @@ const Input: React.FC<InputProps> = () => {
       {/* <button className='p-3'>
         <MicSVG />
       </button> */}
-      <button className='pr-1' onClick={() => {fetch(url, bodyMaker(text))}}>
+      <button className='pr-1' onClick={handleOnClick}>
         <SendSVG />
       </button>
     </div>
