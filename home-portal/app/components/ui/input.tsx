@@ -39,7 +39,7 @@ const Input: React.FC<InputProps> = ({setToast}) => {
         ref={textAreaRef}
         rows={1}
         placeholder="What would you like your smart home to do?"
-        className={"p-4 w-full text-center bg-transparent focus:outline-none text-2xl resize-none overflow-scroll  max-h-[50vh] min-h-[10vh] lg:max-h-[55vh]"}
+        className={"p-4 w-full text-center bg-transparent focus:outline-none text-2xl resize-none max-h-[50vh] lg:max-h-[55vh]"}
         onChange={(e) => setText(e.target.value)}
       />
       {/* TODO: support text to speech */}
