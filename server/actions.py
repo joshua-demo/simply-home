@@ -22,6 +22,18 @@ def turn_device_on(room:str, device:str):
         print("POST request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making POST request:", e)
+
+'''
+def turn_lights_on_in_all_rooms():
+    turn_device_on("livingRoom", "light")
+    turn_device_on("kitchen", "light")
+    turn_device_on("bedroom", "light")
+
+def turn_light_off_in_all_rooms():
+    turn_device_off("livingRoom", "light")
+    turn_device_off("kitchen", "light")
+    turn_device_off("bedroom", "light")
+'''
     
 def turn_device_off(room:str, device:str):
     """

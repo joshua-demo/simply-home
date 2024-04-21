@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from uagents import Agent, Bureau, Context, Model
 import instructions
 from collections.abc import Iterable
+import importlib
 
 import actions # custom functions that will work on smart home devices
 from utils import markdown_to_function
@@ -17,10 +18,6 @@ class Response(Model):
     text: str
 
 load_dotenv()
-
-# get all functions from actions.py ---> used to pass to Gemini clients (for function calling)
-all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
-functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
 
 orchestrator = Agent(
    name="orchestrator", 
@@ -57,6 +54,12 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
     try:
         command = _query.command
 
+        importlib.reload(actions)
+        # get all functions from actions.py ---> used to pass to Gemini clients (for function calling)
+        all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
+        functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
+
+        ctx.logger.info(functions_to_use)
         # send code to Gemini client 
         model = genai.GenerativeModel(
             'models/gemini-1.5-pro-latest', 
@@ -93,13 +96,11 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         else:
             # get new function(s) from tool_former
             await ctx.send(tool_former.address, Response(text=command))
-
-            await ctx.send(sender, Response(text="no suitable function was found"))
         
         for content in chat.history:
-          part = content.parts[0]
-          print(content.role, "->", type(part).to_dict(part))
-          print('-'*80)
+            part = content.parts[0]
+            print(content.role, "->", type(part).to_dict(part))
+            print('-'*80)
     except Exception as e:
         ctx.logger.error(f"An error occurred: {str(e)}")
         await ctx.send(sender, Response(text="fail"))
@@ -110,6 +111,9 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
     ctx.logger.info(f"Received message from {sender}: {msg.text}")
     try:
         request = msg.text
+        # get all functions from actions.py ---> used to pass to Gemini clients (for function calling)
+        all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
+        functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
         model = genai.GenerativeModel(
             'models/gemini-1.5-pro-latest', 
             system_instruction=instructions.tool_former_instruction,
@@ -118,8 +122,6 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
         chat = model.start_chat(enable_automatic_function_calling=True)
         response = chat.send_message(request, tool_config=tool_config_from_mode("none"))
 
-
-        ctx.logger.info(response)
         if response is not None and response.candidates:
             # Extract function code from first candidate (assuming one function)
             first_candidate = response.candidates[0]
@@ -131,31 +133,32 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
 
             new_function = None
             # execute the new function so we can reference it via Gemini client later
-            exec(cleaned, globals())
+            # append new function to actions.py
+            with open('./actions.py', 'a') as file:
+                file.write('\n' + cleaned + '\n')
 
-            # find the new function + store it as a function object
-            for item in globals().values():
-                if callable(item) and item.__name__ == function_name:
-                    new_function = item
-                    break
+            # get all functions from actions.py AGAIN (account for new function)
+            #import actions # reimport bc new function was added to actions.py
+            all_functions = [func for func in dir(actions) if callable(getattr(actions, func))]
+            new_functions_to_use = [getattr(actions, func) for func in all_functions if not func.startswith("__")]
             
-            if new_function:
-                # call the newly generated function through Gemini function calling
-                chat = model.start_chat(enable_automatic_function_calling=True)
-                response = chat.send_message(
-                    "Run the function that was generated for me; it should have the name " + function_name,
-                    tools=functions_to_use.append(new_function),
-                    tool_config=tool_config_from_mode("any")
-                )
-                ctx.logger.info(response)
+            print(new_functions_to_use)
+            # call the newly generated function through Gemini function calling
+            chat = model.start_chat(enable_automatic_function_calling=True)
+            response = chat.send_message(
+                "Run the function that was generated for me; it should have the name " + function_name,
+                tools=new_functions_to_use,
+                tool_config=tool_config_from_mode("any")
+            )
+            ctx.logger.info(response)
 
         else:
             # Handle case where no function is generated
             ctx.logger.info("No function generated in response")
 
     except Exception as e:
+        ctx.send(sender, Response(text="tool_former did not create a new function"))
         ctx.logger.error(f"An error occurred: {str(e)}")
-        await ctx.send(sender, Response(text="fail"))
 
 
 community = Bureau(port=8001)
