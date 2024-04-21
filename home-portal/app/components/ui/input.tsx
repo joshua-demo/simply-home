@@ -43,9 +43,10 @@ const Input: React.FC<InputProps> = ({setToast}) => {
         onChange={(e) => setText(e.target.value)}
         value={text}
         onKeyDown={(e) => {
-          e.preventDefault();
-          if (e.key === "Enter")
+          if (e.key === "Enter") {
+            e.preventDefault();
             handleOnClick()
+          }
         }}
       />
       {/* TODO: support text to speech */}
