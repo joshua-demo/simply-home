@@ -122,7 +122,7 @@ export const MultiStepLoader = ({
         setLoading(false);
       }, duration);
     }
-    else if (currentState !== newState) {
+    if (currentState !== newState) {
         setCurrentState(newState);
     }
   }
