@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "init": "./init.sh",
     "dev": "next dev --turbo -p 3001",
     "build": "next build",
     "start": "next start",
