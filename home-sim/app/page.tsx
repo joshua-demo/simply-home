@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react";
 import { CameraIcon, LightbulbIcon, LockedIcon, SpeakerIcon, UnlockedIcon } from "./components/icons";
+import { cameraAPI } from "./api/helper";
 
 type RoomProps = {
   roomName: string;
@@ -22,7 +23,7 @@ function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightC
             backgroundColor: lightOn ? lightColor : "transparent",
             ...(lightOn ? {} : { ":hover": { backgroundColor: "rgb(107 114 128)" } }),
           }}
-          className={`rounded-full p-3 border border-gray-800 transition-colors duration-700 ${
+          className={`rounded-full p-3 border border-gray-800 transition-colors duration-500 ease-in-out ${
             lightOn ? "transparent text-gray-900" : "hover:border-gray-500"
           }`}
           onClick={toggleLight}
@@ -30,8 +31,8 @@ function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightC
           <LightbulbIcon className="w-8 h-8" />
         </button>
         <button
-          className={`rounded-xl p-3 border border-gray-800 ${
-            speakerOn ? "!border-gray-500" : "hover:border-gray-500"
+          className={`rounded-xl p-3 border border-gray-800 transition-colors duration-500 ease-in-out hover:border-gray-500 ${
+            speakerOn && "animate-bump"
           }`}
           onClick={toggleSpeaker}
         >
@@ -49,6 +50,8 @@ function Room({ roomName, lightOn, speakerOn, toggleLight, toggleSpeaker, lightC
     </div>
   );
 }
+
+const cameraItems = ["NOTHING", "PERSON", "CAR", "ANIMAL", "PACKAGE"];
 
 export default function Home() {
   const [livingRoomLight, setLivingRoomLight] = useState(false);
@@ -81,6 +84,33 @@ export default function Home() {
 
     return () => clearInterval(interval);
   }, [time]);
+
+  useEffect(() => {
+    fetch("/api/read")
+    .then((res) => res.json())
+    .then((data) => {
+      const parsedData = JSON.parse(data);
+      setLivingRoomLight(parsedData.livingRoom.devices.light.isOn);
+      setKitchenLight(parsedData.kitchen.devices.light.isOn);
+      setBedroomLight(parsedData.bedroom.devices.light.isOn);
+      
+      setLivingRoomSpeaker(parsedData.livingRoom.devices.speaker.isOn);
+      setKitchenSpeaker(parsedData.kitchen.devices.speaker.isOn);
+      setBedroomSpeaker(parsedData.bedroom.devices.speaker.isOn);
+
+      setLivingRoomLightColor(parsedData.livingRoom.devices.light.color);
+      setKitchenLightColor(parsedData.kitchen.devices.light.color);
+      setBedroomLightColor(parsedData.bedroom.devices.light.color);
+
+      setLivingRoomSpeakerText(parsedData.livingRoom.devices.speaker.text);
+      setKitchenRoomSpeakerText(parsedData.kitchen.devices.speaker.text);
+      setBedroomRoomSpeakerText(parsedData.bedroom.devices.speaker.text);
+
+      setFrontHouseLock(parsedData.frontHouse.devices.lock.isLocked);
+      setFrontHouseCameraItem(parsedData.frontHouse.devices.camera.item);
+    })
+    // @ts-ignore
+  }, [])
 
   useEffect(() => {
     if((time.getTime()/60000) % 30){
@@ -117,6 +147,11 @@ export default function Home() {
     hour12: true,
     timeZone: "UTC",
   });
+
+  const handleCameraItemChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFrontHouseCameraItem(e.target.value);
+    cameraAPI(e.target.value);
+  }
 
   const toggleLivingRoomLightFunction = async () => {
     if(livingRoomLight){
@@ -297,12 +332,16 @@ export default function Home() {
           <div className="p-6 m-4 border border-white rounded-xl">
             <h2 className="text-2xl font-semibold text-center">Front Of House</h2>
             <div className="grid grid-cols-2 mt-4 place-items-center">
-              <button
-                className={"rounded-full p-3 border border-gray-800 hover:border-gray-500"}
-                onClick={toggleFrontHouseLockFunction}
-              >
-                {frontHouseLock ? <LockedIcon className="w-8 h-8" /> : <UnlockedIcon className="w-8 h-8" />}
-              </button>
+            <button 
+              className="flex items-center justify-center p-3 transition-all duration-500 ease-in-out border border-gray-800 rounded-full hover:border-gray-500"
+              onClick={toggleFrontHouseLockFunction}
+            >
+              {frontHouseLock ? (
+                <LockedIcon className="w-8 h-8" />
+              ) : (
+                <UnlockedIcon className="w-8 h-8" />
+              )}
+            </button>
               
               <div
                 className="p-3 border border-gray-800 rounded-xl"
@@ -313,7 +352,16 @@ export default function Home() {
                 {' '}
               </div>
               <div className="p-2 text-center">
-                Camera sees {frontHouseCameraItem}
+                Camera sees
+                <select className="bg-gray-800"
+                  value={frontHouseCameraItem}
+                  onChange={(e) => handleCameraItemChange(e)}>
+                  {cameraItems.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))} 
+                </select>
               </div>
             </div>
           </div>
