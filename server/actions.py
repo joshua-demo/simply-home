@@ -173,17 +173,3 @@ def check_camera():
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
 
-def turn_on_all_lights():
-    turn_on("livingRoom", "light")
-    turn_on("kitchen", "light")
-    turn_on("bedroom", "light")
-
-def turn_on_all_lights():
-    turn_on("livingRoom", "light")
-    turn_on("kitchen", "light")
-    turn_on("bedroom", "light")
-
-def set_theme_to_ucla_colors():
-    set_light_color("livingRoom", "blue")
-    set_light_color("kitchen", "gold")
-    set_light_color("bedroom", "blue")
