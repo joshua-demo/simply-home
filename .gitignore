@@ -35,10 +35,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Smart home state file
-data.json
-
 # python server files
 venv/
 __pycache__/
 .env
+
+# Smart home state related files
+data.json
+actions.py
