@@ -1,0 +1,24 @@
+version: "3.8"
+services:
+    server:
+        restart: always
+        build:
+            dockerfile: ./server/Dockerfile
+            context: .
+        volumes:
+            - ./server/server.py:/server/server.py
+            - ./server/agents.py:/server/agents.py
+            - ./server/utils.py:/server/utils.py
+            - ./server/actions.py:/server/actions.py
+            - ./server/instructions.py:/server/instructions.py
+            - ./server/documentation.txt:/server/documentation.txt
+            - ./server/updateDocumentation.py:/server/updateDocumentation.py
+            - ./server/run.py:/server/run.py
+        environment:
+            - WATCHFILES_FORCE_POLLING=true
+            - GEMINI_API_KEY=${GEMINI_API_KEY}
+            - GEMINI_API_KEY_V2=${GEMINI_API_KEY_V2}
+            - GEMINI_API_KEY_V3=${GEMINI_API_KEY_V3}
+        ports:
+            - 8000:8000
+            - 8001:8001
