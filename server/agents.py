@@ -5,13 +5,13 @@ import google.generativeai as genai
 from google.generativeai.types import content_types
 from dotenv import load_dotenv
 from uagents import Agent, Bureau, Context, Model
-import instructions
 from collections.abc import Iterable
 import requests
 import importlib
 
-import actions # custom functions that will work on smart home devices
-from utils import markdown_to_function
+import modules.instructions as instructions
+import modules.actions as actions # custom functions that will work on smart home devices
+from modules.utils import markdown_to_function
 
 class Request(Model):
     command: str

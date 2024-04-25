@@ -12,7 +12,7 @@ orchestrator_instruction = """
         Basically a user request can be a simple command that encompasses multiple steps that run multiple individual functions.
         If the command is not in the list, you should respond with an error message. Do NOT just choose a function that is close enough. It has to be a function perfectly matching the user's request. If it isn't then you should respond with an error message.
         """
-with open('documentation.txt', 'r') as file:
+with open('./modules/documentation.txt', 'r') as file:
   documentation_contents = file.read()
 
 tool_former_instruction = """
