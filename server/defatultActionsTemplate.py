@@ -172,3 +172,7 @@ def check_camera():
         print("GET request successful:", response.status_code)
     except requests.exceptions.RequestException as e:
         print("Error making GET request:", e)
+<<<<<<< HEAD:server/defatultActionsTemplate.py
+=======
+
+>>>>>>> df2aa39b34a8b678d409ce66fb92213635b54f1e:server/actions.py

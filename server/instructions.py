@@ -67,13 +67,13 @@ feedback_agent_instruction = """
         
         in the documentation and not made up functions, and 3 make sure that the function will actually compile. 
 
-        You will be given the functions and the instructions for what the function should be accomplishing. If the function does not compile, 
+        You will be given the functions and the instructions for what the function should be accomplishing. If the function has syntax errors, 
 
         return "does not compile" and error code 400. If the function doesn't do what it's supposed to do, return "doesn't 
 
         match command" and error code 400. If the function uses methods that aren't in the documentation, return "you are using functions
         
-        that don't exist" and error code 400. If the function compiles and matches the command, return "success" 
+        that don't exist" and error code 400. However, if the function compiles, is valid, and matches the command, return "success" 
 
         and success code 200. Reminder, the only thing you should be returning is the command of the error and the status 
 

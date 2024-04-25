@@ -5,7 +5,8 @@ Roomy is an AI powered smarter home proof of concept. We apply the tool forming 
 ![System Design](https://d112y698adiu2z.cloudfront.net/photos/production/software_photos/002/859/759/datas/original.png)
 Roomy uses an orchestrator model to understand the users request and apply it to the most relevant command(s). If there are no commands that handle the user's request, the orchestrator calls the tool former. The tool former generates a new function building on the previous functions and it appends it to the set of functions for the orchestrator to call from. The tool former goes through a feedback cycle with a feedback agent until the tool former generates a function that compiles and meets the user's request (if possible). As roomy is used and it generates more functions it continuous to augment and improve it's abilities until it has a minimal amount of function creations. Power users can then write their own functions in python for the orchestrator to call, or they can edit python functions created by the tool former.
 
-Roomy is a winning hackathon project from LA Hacks 2024, written by [Mauricio Curiel](https://github.com/Luceium), [Jonathan Nguyen](https://github.com/jonathanguven), [Steven Le](https://github.com/steeevin88), and [Joshua Demo](https://github.com/joshua-demo) 
+Roomy is a winning hackathon project from LA Hacks 2024, written by [Mauricio Curiel](https://github.com/Luceium), [Jonathan Nguyen](https://github.com/jonathanguven), [Steven Le](https://github.com/steeevin88), and [Joshua Demo](https://github.com/joshua-demo).
+Roomy won the [Fetch.ai](https://fetch.ai/) company challenge. Check out our [Devpost Submission](https://devpost.com/software/harmonichomes).
 ## What's next?
 ### TODO
 - fine tune models & improve prompt engineering per model
