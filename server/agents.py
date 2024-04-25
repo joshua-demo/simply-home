@@ -173,7 +173,7 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
                 # get all functions from actions.py AGAIN (account for newly added function)
 
                 # append new function to actions.py
-                with open('./actions.py', 'a') as file:
+                with open('./modules/actions.py', 'a') as file:
                     file.write('\n' + msg.text + '\n')
                 
                 importlib.reload(actions)
