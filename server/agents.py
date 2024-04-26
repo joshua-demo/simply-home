@@ -29,19 +29,19 @@ load_dotenv()
 orchestrator = Agent(
    name="orchestrator", 
    seed="orchestrator recovery phrase",
-   endpoint=["http://localhost:8001/submit"],
+   endpoint=["http://agents:8001/submit"],
 )
 
 tool_former = Agent(
     name="tool_former",
     seed="tool_former recovery phrase",
-    endpoint=["http://localhost:8001/submit"],
+    endpoint=["http://agents:8001/submit"],
 )
 
 feedback_agent = Agent(
     name="feedback_agent",
     seed="feedback_agent recovery phrase",
-    endpoint=["http://localhost:8001/submit"],
+    endpoint=["http://agents:8001/submit"],
 )
 
 def tool_config_from_mode(mode: str, fns: Iterable[str] = ()):
@@ -55,7 +55,7 @@ async def startup(ctx: Context):
     ctx.logger.info(f"Starting up {orchestrator.name}")
     ctx.logger.info(f"With address: {orchestrator.address}")
     ctx.logger.info(f"And wallet address: {orchestrator.wallet.address()}")
-    requests.post("http://localhost:3000/api/setStep", json={"step": 0})
+    requests.post("http://portal:3000/api/setStep", json={"step": 0})
 
 @tool_former.on_event("startup")
 async def startup(ctx: Context):
@@ -69,7 +69,7 @@ async def startup(ctx: Context):
 
 @orchestrator.on_query(model=Request, replies={Response})
 async def query_handler(ctx: Context, sender: str, _query: Request):
-    requests.post("http://localhost:3000/api/setStep", json={"step": 0})
+    requests.post("http://portal:3000/api/setStep", json={"step": 0})
 
     # configure Gemini client --> we're using two keys so we don't get rate limited quickly
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -107,7 +107,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
         has_function_call = any("function_call" in str(content.parts[0]) for content in chat.history)
         if has_function_call:
             ctx.logger.info("Calling function and settings steps to 3")
-            requests.post("http://localhost:3000/api/setStep", json={"step": 3})
+            requests.post("http://portal:3000/api/setStep", json={"step": 3})
 
         # if a function call appears in the chat history, assume successful adjustment
         if has_function_call: 
@@ -122,7 +122,7 @@ async def query_handler(ctx: Context, sender: str, _query: Request):
 
 @tool_former.on_message(model=Response)
 async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
-    requests.post("http://localhost:3000/api/setStep", json={"step": 1})
+    requests.post("http://portal:3000/api/setStep", json={"step": 1})
     # reconfigure Gemini client --> we're using two keys so we don't get rate limited quickly
     genai.configure(api_key=os.getenv("GEMINI_API_KEY_V2"))
     # get all functions from actions.py so Gemini can use function calling capabilities
@@ -177,7 +177,7 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
                     file.write('\n' + msg.text + '\n')
                 
                 importlib.reload(actions)
-                requests.post("http://localhost:3000/api/setStep", json={"step": 3})
+                requests.post("http://portal:3000/api/setStep", json={"step": 3})
                 getattr(actions, msg.function_name)()
             else:
                 # didn't pass the feedback loop, so reiterate and send back to the feedback loop for further testing
@@ -191,12 +191,12 @@ async def tool_former_message_handler(ctx: Context, sender: str, msg: Request):
     except Exception as e:
         await ctx.send(orchestrator.address, Response(text="Error creating a new function"))
         ctx.logger.error(f"An error occurred: {str(e)}")
-        requests.post("http://localhost:3000/api/setStep", json={"step": -1})
+        requests.post("http://portal:3000/api/setStep", json={"step": -1})
         await ctx.send(sender, Response(text="fail"))
 
 @feedback_agent.on_message(model=Response)
 async def feedback_agent_message_handler(ctx: Context, sender: str, msg: Response):
-    requests.post("http://localhost:3000/api/setStep", json={"step": 2})
+    requests.post("http://portal:3000/api/setStep", json={"step": 2})
     genai.configure(api_key=os.getenv("GEMINI_API_KEY_V3"))
     
     ctx.logger.info(f"Starting feedback process")

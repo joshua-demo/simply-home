@@ -10,7 +10,7 @@ def turn_on(room:str, device:str):
     If no room is specified, default to using the living room.
     If you want to turn on all devices in a room, turn each device in each room on individually. Don't separate function calls with a "\n"
     """
-    url = "http://localhost:3001/api/turnOn"
+    url = "http://sim:3001/api/turnOn"
     payload = {
         "room": room,
         "device": device
@@ -33,7 +33,7 @@ def turn_device_on(room:str, device:str):
     If no room is specified, default to using the living room.
     If you want to turn on all devices in a room, turn each device in each room on individually. Don't separate function calls with a "\n"
     """
-    url = "http://localhost:3001/api/turnOn"
+    url = "http://sim:3001/api/turnOn"
     payload = {
         "room": room,
         "device": device
@@ -55,7 +55,7 @@ def turn_off(room:str, device:str):
 
     If no room is specified, default to using the living room.
     """
-    url = "http://localhost:3001/api/turnOff"
+    url = "http://sim:3001/api/turnOff"
     payload = {
         "room": room,
         "device": device
@@ -77,7 +77,7 @@ def turn_device_off(room:str, device:str):
 
     If no room is specified, default to using the living room.
     """
-    url = "http://localhost:3001/api/turnOff"
+    url = "http://sim:3001/api/turnOff"
     payload = {
         "room": room,
         "device": device
@@ -99,7 +99,7 @@ def set_light_color(room:str, color:str):
 
     If no room is specified, default to using the living room.
     """
-    url = "http://localhost:3001/api/setLightColor"
+    url = "http://sim:3001/api/setLightColor"
 
     payload = {
         "room": room,
@@ -124,7 +124,7 @@ def play_sound(room:str, sound:str):
 
     If no room is specified, default to using the living room. DO NOT play the sound in the frontHouse.
     """
-    url = "http://localhost:3001/api/playSound"
+    url = "http://sim:3001/api/playSound"
     payload = {
         "room": room,
         "sound": sound
@@ -141,7 +141,7 @@ def lock_door():
     """
     Lock the door to the house. There's only one door.
     """
-    url = "http://localhost:3001/api/lockDoor"
+    url = "http://sim:3001/api/lockDoor"
     try:
         response = requests.post(url)
         response.raise_for_status()
@@ -153,7 +153,7 @@ def unlock_door():
     """
     Unlock the door to the house. There's only one door.
     """
-    url = "http://localhost:3001/api/unlockDoor"
+    url = "http://sim:3001/api/unlockDoor"
     try:
         response = requests.post(url)
         response.raise_for_status()
@@ -165,7 +165,7 @@ def check_camera():
     """
     Check the camera at the front of the house.
     """
-    url = "http://localhost:3001/api/checkCamera"
+    url = "http://sim:3001/api/checkCamera"
     try:
         response = requests.get(url)
         response.raise_for_status()

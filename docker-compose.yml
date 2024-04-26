@@ -1,5 +1,31 @@
 version: "3.8"
 services:
+    portal:
+        restart: on-failure
+        build:
+            context: ./home-portal
+            dockerfile: ./Dockerfile
+        volumes:
+            - ./home-portal:/portal
+        stdin_open: true
+        environment:
+            - CHOKIDAR_USEPOLLING=true
+            - WATCHPACK_POLLING=true
+        ports:
+            - 3000:3000
+    sim:
+        restart: on-failure
+        build:
+            context: ./home-sim
+            dockerfile: ./Dockerfile
+        volumes:
+            - ./home-sim:/sim
+        stdin_open: true
+        environment:
+            - CHOKIDAR_USEPOLLING=true
+            - WATCHPACK_POLLING=true
+        ports:
+            - 3001:3001
     server:
         restart: always
         build:
@@ -8,11 +34,7 @@ services:
         volumes:
             - ./server/server.py:/server/server.py
             - ./server/agents.py:/server/agents.py
-            - ./server/utils.py:/server/utils.py
-            - ./server/actions.py:/server/actions.py
-            - ./server/instructions.py:/server/instructions.py
-            - ./server/documentation.txt:/server/documentation.txt
-            - ./server/updateDocumentation.py:/server/updateDocumentation.py
+            - ./server/modules:/server/modules
             - ./server/run.py:/server/run.py
         environment:
             - WATCHFILES_FORCE_POLLING=true
@@ -22,3 +44,5 @@ services:
         ports:
             - 8000:8000
             - 8001:8001
+        depends_on:
+            - portal
