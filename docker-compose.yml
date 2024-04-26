@@ -27,7 +27,6 @@ services:
         ports:
             - 3001:3001
     server:
-        restart: always
         build:
             dockerfile: ./server/Dockerfile
             context: .
