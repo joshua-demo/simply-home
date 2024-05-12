@@ -2,7 +2,8 @@
 Smart homes offer a set of basic device functionalities that users can use to build complex routines. But intelligent automatons require manual set up and normal interactions are handled with dashboards because voice assistants are flaky.
 
 Roomy is an AI powered smarter home proof of concept. We apply the tool forming and auto GPT concepts to build an intelligent assistant capable of handling complex, and opinionated interactions.
-![System Design](https://d112y698adiu2z.cloudfront.net/photos/production/software_photos/002/859/759/datas/original.png)
+![System Design](https://github.com/joshua-demo/simply-home/assets/79354255/a9a707d0-a22f-47fe-8020-dfe8150c836c)
+
 Roomy uses an orchestrator model to understand the users request and apply it to the most relevant command(s). If there are no commands that handle the user's request, the orchestrator calls the tool former. The tool former generates a new function building on the previous functions and it appends it to the set of functions for the orchestrator to call from. The tool former goes through a feedback cycle with a feedback agent until the tool former generates a function that compiles and meets the user's request (if possible). As roomy is used and it generates more functions it continuous to augment and improve it's abilities until it has a minimal amount of function creations. Power users can then write their own functions in python for the orchestrator to call, or they can edit python functions created by the tool former.
 
 Roomy is a winning hackathon project from LA Hacks 2024, written by [Mauricio Curiel](https://github.com/Luceium), [Jonathan Nguyen](https://github.com/jonathanguven), [Steven Le](https://github.com/steeevin88), and [Joshua Demo](https://github.com/joshua-demo).
